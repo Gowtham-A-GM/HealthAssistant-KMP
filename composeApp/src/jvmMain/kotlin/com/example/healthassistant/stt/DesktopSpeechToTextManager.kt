@@ -1,8 +1,8 @@
 package com.example.healthassistant.stt
 
+import com.example.healthassistant.core.stt.SpeechToTextManager
 import org.vosk.Model
 import org.vosk.Recognizer
-import java.io.File
 import javax.sound.sampled.*
 
 class DesktopSpeechToTextManager(

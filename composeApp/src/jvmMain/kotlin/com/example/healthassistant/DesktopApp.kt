@@ -5,9 +5,9 @@ import androidx.compose.runtime.remember
 import com.example.healthassistant.designsystem.HealthAssistantTheme
 import com.example.healthassistant.presentation.assessment.AssessmentScreen
 import com.example.healthassistant.presentation.assessment.AssessmentViewModel
-import com.example.healthassistant.presentation.assessment.data.AssessmentApiImpl
-import com.example.healthassistant.presentation.assessment.data.AssessmentRepositoryImpl
-import com.example.healthassistant.presentation.assessment.data.network.createHttpClient
+import com.example.healthassistant.data.remote.assessment.AssessmentApiImpl
+import com.example.healthassistant.data.repository.AssessmentRepositoryImpl
+import com.example.healthassistant.core.network.createHttpClient
 import com.example.healthassistant.stt.DesktopSpeechToTextManager
 
 @Composable

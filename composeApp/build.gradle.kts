@@ -9,7 +9,16 @@ plugins {
     alias(libs.plugins.composeHotReload)
 
     alias(libs.plugins.kotlinSerialization)
+    id("app.cash.sqldelight")
 
+}
+
+sqldelight {
+    databases {
+        create("HealthDatabase") {
+            packageName.set("com.example.healthassistant.db")
+        }
+    }
 }
 
 kotlin {
@@ -37,6 +46,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 
             implementation("io.ktor:ktor-client-okhttp:2.3.7")
+            implementation("app.cash.sqldelight:android-driver:2.0.1")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -60,9 +70,13 @@ kotlin {
             // Kotlinx serialization
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
+            //SQL Delight
+            implementation("app.cash.sqldelight:runtime:2.0.1")
+
         }
         iosMain.dependencies {
             implementation("io.ktor:ktor-client-darwin:2.3.7")
+            implementation("app.cash.sqldelight:native-driver:2.0.1")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -72,6 +86,8 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
 
             implementation("org.vosk:vosk:0.3.45")
+            implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
+
         }
     }
 }

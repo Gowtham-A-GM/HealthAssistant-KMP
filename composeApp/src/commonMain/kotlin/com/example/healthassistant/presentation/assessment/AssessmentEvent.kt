@@ -1,6 +1,9 @@
 package com.example.healthassistant.presentation.assessment
 
 sealed class AssessmentEvent {
+
+    object MyselfSelected : AssessmentEvent()
+    object SomeoneElseSelected : AssessmentEvent()
     data class OptionSelected(
         val optionId: String
     ) : AssessmentEvent()

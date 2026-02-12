@@ -129,6 +129,17 @@ fun AssessmentScreen(
             // ───── Question ─────
             when (state.phase) {
 
+                AssessmentPhase.CHOOSE_USER -> {
+                    ChooseUserScreen(
+                        onMyself = {
+                            viewModel.onEvent(AssessmentEvent.MyselfSelected)
+                        },
+                        onSomeoneElse = {
+                            viewModel.onEvent(AssessmentEvent.SomeoneElseSelected)
+                        }
+                    )
+                }
+
                 AssessmentPhase.INIT -> {
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(16.dp))
@@ -219,49 +230,58 @@ fun AssessmentScreen(
 
                 AssessmentPhase.LLM -> {
 
-                    // LLM question
+                    // 🧠 Assistant message
                     state.assistantMessage?.let {
                         Text(
                             text = it,
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center
                         )
+
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
 
-                    // LLM analysis
-                    state.analysisHeadline?.let {
-                        Spacer(modifier = Modifier.height(16.dp))
+                    // 📝 Input box for user response
+                    OutlinedTextField(
+                        value = state.typedText,
+                        onValueChange = {
+                            viewModel.onEvent(AssessmentEvent.TextChanged(it))
+                        },
+                        placeholder = {
+                            Text("Type your response here")
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        singleLine = false
+                    )
 
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        state.analysisAdvice.forEach { advice ->
-                            Text("• $advice")
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        state.actionOptions.forEach { option ->
-                            Button(
-                                onClick = {
-                                    viewModel.onEvent(
-                                        AssessmentEvent.OptionSelected(option.id)
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(option.label)
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
+                    Button(
+                        onClick = {
+                            viewModel.onEvent(AssessmentEvent.SendText)
+                        },
+                        enabled = state.typedText.isNotBlank(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Text("Send")
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "You can also answer using voice 🎤",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
+
 
 
 
@@ -303,24 +323,6 @@ fun AssessmentScreen(
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     )
                 }
-
-                if (
-                    state.phase == AssessmentPhase.LLM &&
-                    state.recognizedSpeech.isNotBlank()
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = {
-                            viewModel.onEvent(AssessmentEvent.SendText)
-                        },
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Text("Send")
-                    }
-                }
-
-
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -420,5 +422,20 @@ private fun ActionIcon(
     }
 }
 
+@Composable
+fun ChooseUserScreen(
+    onMyself: () -> Unit,
+    onSomeoneElse: () -> Unit
+) {
+    Column {
+        Text("For whom are you taking this assessment?")
 
+        Button(onClick = onMyself) {
+            Text("Myself")
+        }
 
+        Button(onClick = onSomeoneElse) {
+            Text("Someone else")
+        }
+    }
+}

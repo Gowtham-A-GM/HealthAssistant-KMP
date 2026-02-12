@@ -5,22 +5,23 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.healthassistant.designsystem.HealthAssistantTheme
-import com.example.healthassistant.navigation.AppScreen
-import com.example.healthassistant.navigation.BottomNavBar
+import com.example.healthassistant.presentation.navigation.AppScreen
+import com.example.healthassistant.presentation.navigation.BottomNavBar
 import com.example.healthassistant.presentation.assessment.AssessmentScreen
 import com.example.healthassistant.presentation.history.*
 import com.example.healthassistant.presentation.home.HomeScreen
 //import com.example.healthassistant.presentation.home.HomeViewModel
 import com.example.healthassistant.presentation.news.NewsScreen
 import com.example.healthassistant.presentation.assessment.AssessmentViewModel
-import com.example.healthassistant.presentation.assessment.data.AssessmentApiImpl
-import com.example.healthassistant.presentation.assessment.data.AssessmentRepositoryImpl
-import com.example.healthassistant.presentation.assessment.data.network.NetworkClient
-import com.example.healthassistant.presentation.home.HomeState
+import com.example.healthassistant.data.remote.assessment.AssessmentApiImpl
+import com.example.healthassistant.data.repository.AssessmentRepositoryImpl
+import com.example.healthassistant.core.network.NetworkClient
 import com.example.healthassistant.presentation.home.HomeViewModel
 //import com.example.healthassistant.presentation.home.HomeTab
-import com.example.healthassistant.stt.FakeSpeechToTextManager
-import com.example.healthassistant.stt.SpeechToTextManager
+import com.example.healthassistant.core.stt.SpeechToTextManager
+import com.example.healthassistant.core.database.DatabaseDriverFactory
+import com.example.healthassistant.db.HealthDatabase
+import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSourceImpl
 
 
 //@Composable
@@ -92,23 +93,27 @@ import com.example.healthassistant.stt.SpeechToTextManager
 
 @Composable
 fun App(
-    speechToTextManager: SpeechToTextManager
+    speechToTextManager: SpeechToTextManager,
+    database: HealthDatabase
 ) {
+
     HealthAssistantTheme {
+
+        val local = remember {
+            AssessmentLocalDataSourceImpl(database)
+        }
 
         var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
 
-        // Shared backend
         val api = remember {
             AssessmentApiImpl(
                 client = NetworkClient.httpClient,
-//                baseUrl = "http://10.0.2.2:8000"
-                baseUrl = "https://0672-2405-201-e012-2038-3816-a61f-53e9-6ddf.ngrok-free.app"
+                baseUrl = "https://878a-2405-201-e012-2038-e93d-f96a-9ece-bfa8.ngrok-free.app"
             )
         }
 
         val repository = remember {
-            AssessmentRepositoryImpl(api)
+            AssessmentRepositoryImpl(api, local)
         }
 
         val assessmentViewModel = remember {
@@ -119,18 +124,8 @@ fun App(
         }
 
         Column {
-
             Box(modifier = Modifier.weight(1f)) {
                 when (currentScreen) {
-
-//                    AppScreen.Home -> HomeScreen(
-//                        viewModel = HomeViewModel(
-//                            onStartAssessment = {
-//                                currentScreen = AppScreen.Assessment
-//                            }
-//                        )
-//                    )
-
                     AppScreen.Home -> HomeScreen(
                         viewModel = HomeViewModel(
                             onStartAssessment = {
@@ -141,9 +136,7 @@ fun App(
 
                     AppScreen.Assessment -> AssessmentScreen(
                         viewModel = assessmentViewModel,
-                        onExit = {
-                            currentScreen = AppScreen.Home
-                        },
+                        onExit = { currentScreen = AppScreen.Home },
                         onReportGenerated = {
                             currentScreen = AppScreen.HistoryDetail
                         }
@@ -179,10 +172,10 @@ fun App(
                     onNewsClick = { currentScreen = AppScreen.News }
                 )
             }
-
         }
     }
 }
+
 
 //@Composable
 //fun App() {

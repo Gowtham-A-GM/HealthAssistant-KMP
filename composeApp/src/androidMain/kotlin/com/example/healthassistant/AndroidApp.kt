@@ -5,11 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.example.healthassistant.designsystem.HealthAssistantTheme
-import com.example.healthassistant.presentation.assessment.AssessmentScreen
-import com.example.healthassistant.presentation.assessment.AssessmentViewModel
-import com.example.healthassistant.presentation.assessment.data.AssessmentApiImpl
-import com.example.healthassistant.presentation.assessment.data.AssessmentRepositoryImpl
-import com.example.healthassistant.presentation.assessment.data.network.createHttpClient
 import com.example.healthassistant.stt.AndroidSpeechToTextManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import com.example.healthassistant.db.HealthDatabase
 
 //@Composable
 //fun AndroidApp() {
@@ -86,7 +82,7 @@ import androidx.core.content.ContextCompat
 
 
 @Composable
-fun AndroidApp() {
+fun AndroidApp(database: HealthDatabase) {
     HealthAssistantTheme {
 
         val context = LocalContext.current
@@ -124,7 +120,8 @@ fun AndroidApp() {
 
         // 👇 CALL SHARED APP (THIS IS THE KEY)
         App(
-            speechToTextManager = speechToTextManager
+            speechToTextManager = speechToTextManager,
+            database = database
         )
     }
 }
