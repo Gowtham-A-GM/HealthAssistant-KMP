@@ -1,16 +1,48 @@
 package com.example.healthassistant.designsystem
 
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-// Light Theme Colors
-val PrimaryBlue = Color(0xFF1F4FD8)
-val SecondaryBlue = Color(0xFF4F8DCB)
+object AppColors {
 
-val BackgroundLight = Color(0xFFF5FAFF)
-val CardLight = Color(0xFFFFFFFF)
+    // Brand Colors
+    val heavyBlue = Color(0xFF0F2854)
+    val darkBlue = Color(0xFF1C4D8D)
+    val blue = Color(0xFF4988C4)
+    val lightBlue = Color(0xFFBDE8F5)
+    val dustyGray = Color(0xFF9CA3AF)
+    val highlightYellow = Color(0xFFFFD54F)
 
-val TextPrimary = Color(0xFF1A1A1A)
-val TextSecondary = Color(0xFF8A8A8A)
 
-val ChipBackground = Color(0xFFE3F2FD)
-val QuickHelpCard = Color(0xFFE8F4FF)
+    // Text
+    val textPrimary = heavyBlue
+    val textSecondary = Color.White
+    val textHint = dustyGray
+
+
+    // Gradient
+    val gradientStart = Color(0xFF2159BA)
+    val gradientEnd = heavyBlue
+    val primaryGradient: Brush
+        get() = Brush.horizontalGradient(
+            colors = listOf(gradientStart, gradientEnd)
+        )
+
+
+    // Backgrounds
+    val background = Color(0xFFF2F8FF)
+    val surface = Color.White
+
+
+
+    // Button
+    val primary = darkBlue
+    val primaryLight = lightBlue
+    val onPrimary = Color.White
+
+
+
+    // Bottom Nav
+    val navInactive = heavyBlue.copy(alpha = 0.5f)
+    val navIndicator = heavyBlue
+}

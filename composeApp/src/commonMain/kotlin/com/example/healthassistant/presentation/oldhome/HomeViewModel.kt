@@ -1,4 +1,4 @@
-package com.example.healthassistant.presentation.home
+package com.example.healthassistant.presentation.oldhome
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,27 +8,24 @@ class HomeViewModel(
     private val onStartAssessment: () -> Unit
 ) : ViewModel() {
 
+
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-
             HomeEvent.StartAssessment -> {
                 onStartAssessment()
+                // navigation later
             }
-
             is HomeEvent.SuggestionClicked -> {
-                // handle later
+                // start assessment with this text later
             }
-
-            is HomeEvent.QuickHelpClicked -> {
-                // handle later
-            }
-
-            HomeEvent.SettingsClicked -> {
-                // handle later
+            HomeEvent.EmergencyClicked -> {
+                // open emergency flow later
             }
         }
     }
+
+
 }
