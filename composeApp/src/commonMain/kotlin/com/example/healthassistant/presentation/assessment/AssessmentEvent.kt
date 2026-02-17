@@ -15,6 +15,8 @@ sealed class AssessmentEvent {
     object StopListening : AssessmentEvent()
 
     data class SpeechRecognized(val text: String) : AssessmentEvent()
+    object VolumeClicked : AssessmentEvent()
+
 
     object ExitClicked : AssessmentEvent()
 }

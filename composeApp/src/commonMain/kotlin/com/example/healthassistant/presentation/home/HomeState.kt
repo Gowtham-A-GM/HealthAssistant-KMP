@@ -31,7 +31,7 @@ data class HomeState(
             icon = Res.drawable.ic_quickhelp_emergency
         ),
         QuickHelpItem(
-            title = "Remainder",
+            title = "Care Tip",
             description = "Take a short walk today to refresh your body and mind",
             icon = Res.drawable.ic_quickhelp_remainders
         ),

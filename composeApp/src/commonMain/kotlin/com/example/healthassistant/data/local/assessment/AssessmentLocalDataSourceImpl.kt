@@ -1,38 +1,51 @@
 package com.example.healthassistant.data.local.assessment
 
+import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
 import com.example.healthassistant.db.HealthDatabase
+import com.example.healthassistant.domain.model.assessment.Question
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
+
 class AssessmentLocalDataSourceImpl(
     database: HealthDatabase
 ) : AssessmentLocalDataSource {
 
-    private val queries = database.assessmentQueries
+    private val queries = database.assessmentContextQueries
 
-    override suspend fun saveAnswer(
-        questionId: String,
-        questionText: String,
-        options: List<String>,
-        selectedAnswer: String
+    override suspend fun insertContext(
+        question: Question,
+        answer: AnswerDto
     ) {
-        queries.insertAnswer(
-            question_id = questionId,
-            question_text = questionText,
-            options_json = Json.encodeToString(options),
-            selected_answer = selectedAnswer
+        AppLogger.d(
+            "DB",
+            "INSERT → qId=${question.id}, type=${question.responseType}"
+        )
+
+        val optionsJson = question.responseOptions?.let {
+            Json.encodeToString(it)
+        }
+
+        val answerJson = Json.encodeToString(answer)
+
+        queries.insertContext(
+            question_id = question.id,
+            question_text = question.text,
+            response_type = question.responseType,
+            response_options_json = optionsJson,
+            answer_json = answerJson
         )
     }
 
-    override suspend fun getAllAnswers(): List<LocalAnswer> {
-        val rows = queries.selectAll().executeAsList()
-
-        return rows.map { row ->
-            LocalAnswer(
-                questionId = row.question_id,
-                questionText = row.question_text,
-                options = Json.decodeFromString<List<String>>(row.options_json),
-                selectedAnswer = row.selected_answer
+    override suspend fun getAllContext(): List<LocalContext> {
+        return queries.selectAll().executeAsList().map {
+            LocalContext(
+                questionId = it.question_id,
+                questionText = it.question_text,
+                responseType = it.response_type,
+                responseOptionsJson = it.response_options_json,
+                answerJson = it.answer_json
             )
         }
     }

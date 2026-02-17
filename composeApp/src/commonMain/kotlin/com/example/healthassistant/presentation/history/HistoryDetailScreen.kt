@@ -175,11 +175,11 @@
             fontWeight = FontWeight.Bold
         )
 
-        Text(
-            text = "Can usually be managed at home",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.primary
-        )
+//        Text(
+//            text = "Can usually be managed at home",
+//            style = MaterialTheme.typography.bodySmall,
+//            color = MaterialTheme.colorScheme.primary
+//        )
 
         Spacer(modifier = Modifier.height(4.dp))
 

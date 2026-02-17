@@ -1,26 +1,29 @@
 package com.example.healthassistant.domain.repository
 
+import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
+import com.example.healthassistant.domain.model.assessment.AssessmentSession
+import com.example.healthassistant.domain.model.assessment.Question
+import com.example.healthassistant.domain.model.assessment.Report
 import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
 import com.example.healthassistant.presentation.assessment.model.AssessmentUiModel
 
 interface AssessmentRepository {
 
-    suspend fun startSession(): AssessmentUiModel
+    suspend fun startAssessment(): AssessmentSession
 
     suspend fun submitAnswer(
-        phase: AssessmentPhase,
-        questionId: String,
-        answerValue: String
-    ): AssessmentUiModel
-
-    suspend fun pushContext(
-        questionnaireContext: Map<String, String>?
-    ): AssessmentUiModel
+        question: Question,
+        answer: AnswerDto
+    ): AssessmentSession?
 
 
-    fun setIsMyselfSession(value: Boolean)
+    suspend fun submitFinalReport(): Report
 
-    suspend fun clearStoredAnswers()
+    suspend fun getProfileAnswer(questionId: String): AnswerDto?
+
+
+
 
 }
+
 

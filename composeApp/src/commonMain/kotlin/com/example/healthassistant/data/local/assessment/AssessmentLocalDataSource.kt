@@ -1,15 +1,16 @@
 package com.example.healthassistant.data.local.assessment
 
+import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
+import com.example.healthassistant.domain.model.assessment.Question
+
 interface AssessmentLocalDataSource {
 
-    suspend fun saveAnswer(
-        questionId: String,
-        questionText: String,
-        options: List<String>,
-        selectedAnswer: String
+    suspend fun insertContext(
+        question: Question,
+        answer: AnswerDto
     )
 
-    suspend fun getAllAnswers(): List<LocalAnswer>
+    suspend fun getAllContext(): List<LocalContext>
 
     suspend fun clear()
 }

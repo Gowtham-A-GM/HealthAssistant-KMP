@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -47,6 +48,8 @@ kotlin {
 
             implementation("io.ktor:ktor-client-okhttp:2.3.7")
             implementation("app.cash.sqldelight:android-driver:2.0.1")
+
+            implementation("io.coil-kt:coil-compose:2.4.0")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -63,6 +66,9 @@ kotlin {
             // Ktor core
             implementation("io.ktor:ktor-client-core:2.3.7")
 
+            implementation("io.ktor:ktor-client-logging:2.3.7")
+
+
             // JSON serialization
             implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
             implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
@@ -72,6 +78,9 @@ kotlin {
 
             //SQL Delight
             implementation("app.cash.sqldelight:runtime:2.0.1")
+
+            // Date and Time
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
 
         }
         iosMain.dependencies {
@@ -96,12 +105,34 @@ android {
     namespace = "com.example.healthassistant"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.healthassistant"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+
+        val newsApiKey = localProperties.getProperty("NEWS_API_KEY") ?: ""
+
+
+        buildConfigField(
+            "String",
+            "NEWS_API_KEY",
+            "\"$newsApiKey\""
+        )
+
+
     }
     packaging {
         resources {

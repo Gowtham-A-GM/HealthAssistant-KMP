@@ -13,7 +13,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import com.example.healthassistant.core.utils.appContext
 import com.example.healthassistant.db.HealthDatabase
+import com.example.healthassistant.tts.AndroidTextToSpeechManager
 
 //@Composable
 //fun AndroidApp() {
@@ -86,6 +88,8 @@ fun AndroidApp(database: HealthDatabase) {
     HealthAssistantTheme {
 
         val context = LocalContext.current
+        appContext = context.applicationContext
+
 
         var micGranted by remember {
             mutableStateOf(
@@ -118,10 +122,19 @@ fun AndroidApp(database: HealthDatabase) {
             AndroidSpeechToTextManager(context)
         }
 
+        val ttsManager = remember {
+            AndroidTextToSpeechManager(context)
+        }
+
+
         // 👇 CALL SHARED APP (THIS IS THE KEY)
         App(
             speechToTextManager = speechToTextManager,
-            database = database
+            ttsManager = ttsManager,
+            database = database,
+            newsApiKey = BuildConfig.NEWS_API_KEY
         )
+
+
     }
 }

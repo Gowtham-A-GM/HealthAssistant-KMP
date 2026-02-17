@@ -1,6 +1,7 @@
 package com.example.healthassistant.presentation.assessment
 
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,15 +14,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Color
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -33,7 +38,17 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.domain.model.assessment.ResponseOption
 import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
+import healthassistant.composeapp.generated.resources.Res
+import healthassistant.composeapp.generated.resources.img_avatar
+import org.jetbrains.compose.resources.painterResource
+import healthassistant.composeapp.generated.resources.img_user_avatar
 
 
 @Composable
@@ -44,10 +59,22 @@ fun AssessmentScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    // 🔥 HARD EXIT — DO NOT RENDER ANY UI
-    if (state.phase == AssessmentPhase.REPORT) {
-        return
+    LaunchedEffect(state.report) {
+        if (state.report != null) {
+            onReportGenerated()
+        }
     }
+
+
+
+    LaunchedEffect(key1 = state.sessionId) {
+        if (state.sessionId.isEmpty()) {
+            AppLogger.d("UI", "AssessmentScreen launched → calling startAssessment()")
+            viewModel.startAssessment()
+        }
+    }
+
+
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -58,301 +85,269 @@ fun AssessmentScreen(
         }
     }
 
-    LaunchedEffect(state.phase) {
-        if (state.phase == AssessmentPhase.REPORT) {
-            onReportGenerated()
-        }
-    }
-
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-//                .padding(paddingValues)
-                .statusBarsPadding()
-                .background(MaterialTheme.colorScheme.background),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
         ) {
 
-            // ───── Top Bar ─────
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = state.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = "Step ${state.step} of ${state.totalSteps}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // ───── Illustration Placeholder ─────
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
+            if (state.isGeneratingReport) {
                 Box(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            CircleShape
-                        )
-                )
-                Box(
-                    modifier = Modifier
-                        .size(140.dp)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            CircleShape
-                        )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // ───── Question ─────
-            when (state.phase) {
-
-                AssessmentPhase.CHOOSE_USER -> {
-                    ChooseUserScreen(
-                        onMyself = {
-                            viewModel.onEvent(AssessmentEvent.MyselfSelected)
-                        },
-                        onSomeoneElse = {
-                            viewModel.onEvent(AssessmentEvent.SomeoneElseSelected)
-                        }
-                    )
-                }
-
-                AssessmentPhase.INIT -> {
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Setting things up…",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                }
+                return@Scaffold
+            }
+
+            // 🔹 Scrollable Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 100.dp) // small safe space
+                    .statusBarsPadding(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                if (state.isLoading) {
+                    Spacer(modifier = Modifier.height(120.dp))
+                    CircularProgressIndicator()
+                    return@Column
                 }
 
-
-                AssessmentPhase.PREDEFINED -> {
-
+                // ───────── TOP BAR ─────────
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = state.question,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    if (state.options.isNotEmpty()) {
-                        // 🔘 BUTTON QUESTIONS
-                        state.options.forEach { option ->
-                            Button(
-                                onClick = {
-                                    viewModel.onEvent(
-                                        AssessmentEvent.OptionSelected(option.id)
-                                    )
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 40.dp)
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(26.dp)
-                            ) {
-                                Text(option.label)
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
-                    } else {
-                        // ✍️ TEXT QUESTIONS
-
-                        OutlinedTextField(
-                            value = state.typedText,
-                            onValueChange = {
-                                viewModel.onEvent(
-                                    AssessmentEvent.TextChanged(it)
-                                )
-                            },
-                            placeholder = {
-                                Text("Type your answer here")
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 32.dp),
-                            shape = RoundedCornerShape(20.dp),
-                            singleLine = true
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Button(
-                            onClick = {
-                                viewModel.onEvent(AssessmentEvent.SendText)
-                            },
-                            enabled = state.typedText.isNotBlank(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 32.dp)
-                                .height(48.dp),
-                            shape = RoundedCornerShape(24.dp)
-                        ) {
-                            Text("Send")
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "You can also answer using voice 🎤",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-
-                AssessmentPhase.LLM -> {
-
-                    // 🧠 Assistant message
-                    state.assistantMessage?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-
-                    // 📝 Input box for user response
-                    OutlinedTextField(
-                        value = state.typedText,
-                        onValueChange = {
-                            viewModel.onEvent(AssessmentEvent.TextChanged(it))
-                        },
-                        placeholder = {
-                            Text("Type your response here")
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        singleLine = false
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Button(
-                        onClick = {
-                            viewModel.onEvent(AssessmentEvent.SendText)
-                        },
-                        enabled = state.typedText.isNotBlank(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(24.dp)
-                    ) {
-                        Text("Send")
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "You can also answer using voice 🎤",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-
-
-
-                AssessmentPhase.REPORT -> {
-
-                    // Intentionally empty.
-                    // Navigation is handled by LaunchedEffect
-                }
-
-                AssessmentPhase.END -> {
-
-                    Text(
-                        text = "Assessment completed",
+                        text = "New Assessment",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                else -> {
-                    // INIT or unknown
-                    CircularProgressIndicator()
-                }
-            }
+                Spacer(modifier = Modifier.height(40.dp))
 
+                // Avatar
+                Box(contentAlignment = Alignment.Center) {
 
+                    Box(
+                        modifier = Modifier
+                            .size(220.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                CircleShape
+                            )
+                    )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                if (state.recognizedSpeech.isNotBlank()) {
-                    Text(
-                        text = state.recognizedSpeech,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    Image(
+                        painter = painterResource(Res.drawable.img_avatar),
+                        contentDescription = "Assessment Avatar",
+                        modifier = Modifier
+                            .size(180.dp)
+                            .clip(CircleShape)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
 
-                BottomAssessmentControls(
-                    onMicClick = {
-                        viewModel.onEvent(AssessmentEvent.MicClicked)
-                    },
-                    onExit = {
-                        viewModel.onEvent(AssessmentEvent.ExitClicked)
+                Spacer(modifier = Modifier.height(32.dp))
+
+                state.currentQuestion?.let { question ->
+
+                    Text(
+                        text = question.text,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    when (question.responseType) {
+
+                        // 🔢 NUMBER OR TEXT INPUT
+                        "number", "text" -> {
+
+                            OutlinedTextField(
+                                value = state.typedText,
+                                onValueChange = {
+                                    viewModel.onEvent(
+                                        AssessmentEvent.TextChanged(it)
+                                    )
+                                },
+                                placeholder = { Text("Type your answer") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 32.dp),
+                                shape = RoundedCornerShape(20.dp),
+                                singleLine = true
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                onClick = {
+                                    viewModel.onEvent(AssessmentEvent.SendText)
+                                },
+                                enabled = state.typedText.isNotBlank(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 32.dp)
+                                    .height(48.dp),
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                Text("Submit")
+                            }
+                        }
+
+                        // 🔘 SINGLE / MULTI CHOICE
+                        "single_choice", "multi_choice" -> {
+
+                            val options = question.responseOptions ?: emptyList()
+
+                            if (options.size <= 4) {
+                                // 🔘 Show as buttons
+                                options.forEach { option ->
+
+                                    Button(
+                                        onClick = {
+                                            viewModel.onEvent(
+                                                AssessmentEvent.OptionSelected(option.id)
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 40.dp)
+                                            .height(52.dp),
+                                        shape = RoundedCornerShape(26.dp)
+                                    ) {
+                                        Text(option.label)
+                                    }
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+
+                            } else {
+                                // ⬇️ Show as dropdown
+                                OptionDropdown(
+                                    options = options,
+                                    onOptionSelected = { selectedId ->
+                                        viewModel.onEvent(
+                                            AssessmentEvent.OptionSelected(selectedId)
+                                        )
+                                    }
+                                )
+                            }
+                        }
+
                     }
-                )
-
+                }
             }
 
+            // 🔹 FIXED Bottom Bar
+            BottomAssessmentControls(
+                isMuted = state.isMuted,
+                onMicClick = {
+                    viewModel.onEvent(AssessmentEvent.MicClicked)
+                },
+                onVolumeClick = {
+                    viewModel.onEvent(AssessmentEvent.VolumeClicked)
+                },
+                onExit = {
+                    viewModel.onEvent(AssessmentEvent.ExitClicked)
+                    onExit()
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
 
         }
     }
+
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OptionDropdown(
+    options: List<ResponseOption>,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedLabel by remember { mutableStateOf("Select an option") }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp)
+    ) {
+
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Select an option") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp)
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 250.dp)   // 👈 IMPORTANT
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.label) },
+                    onClick = {
+                        selectedLabel = option.label
+                        expanded = false
+                        onOptionSelected(option.id)
+                    }
+                )
+            }
+        }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+
+
 
 @Composable
 fun BottomAssessmentControls(
+    isMuted: Boolean,
     onMicClick: () -> Unit,
-    onExit: () -> Unit
+    onVolumeClick: () -> Unit,
+    onExit: () -> Unit,
+    modifier: Modifier = Modifier
 )
+
 {
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp),
+            .padding(16.dp),
         shape = RoundedCornerShape(24.dp),
         color = MaterialTheme.colorScheme.surface
     ) {
@@ -368,15 +363,28 @@ fun BottomAssessmentControls(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 ActionIcon(Icons.Default.Videocam)
+
+                // 🎤 MIC (STT)
                 ActionIcon(
                     icon = Icons.Default.Mic,
                     onClick = onMicClick
                 )
 
-                ActionIcon(Icons.Default.VolumeUp)
+                // 🔊 VOLUME (TTS)
+                ActionIcon(
+                    icon = if (isMuted)
+                        Icons.Default.VolumeOff
+                    else
+                        Icons.Default.VolumeUp,
+                    onClick = onVolumeClick
+                )
+
+                // ⋮ More
                 ActionIcon(Icons.Default.MoreVert)
             }
+
 
             Spacer(modifier = Modifier.width(12.dp))
 
