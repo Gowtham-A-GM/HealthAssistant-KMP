@@ -3,6 +3,7 @@ package com.example.healthassistant.data.repository
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSource
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSource
+import com.example.healthassistant.data.local.report.ReportLocalDataSource
 //import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSource
 import com.example.healthassistant.data.remote.assessment.AssessmentApi
 import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
@@ -28,8 +29,10 @@ import kotlinx.serialization.json.Json
 class AssessmentRepositoryImpl(
     private val api: AssessmentApi,
     private val sessionLocal: AssessmentLocalDataSource,
-    private val profileLocal: ProfileLocalDataSource
+    private val profileLocal: ProfileLocalDataSource,
+    private val reportLocal: ReportLocalDataSource
 )
+
  : AssessmentRepository {
 
 
@@ -148,17 +151,40 @@ class AssessmentRepositoryImpl(
 
         AppLogger.d("REPO", "REPORT API SUCCESS → clearing local DB")
 
-// ✅ CLEAR DB HERE (not in ViewModel)
+
+        val report = response.toDomain()
+
+        reportLocal.insert(report)
+
         sessionLocal.clear()
 
+        return report
 
-        return response.toDomain()
 
     }
+
+    override suspend fun getAllReports(): List<Report> {
+        return reportLocal.getAll()
+    }
+
+    override suspend fun getReportById(id: String): Report? {
+        return reportLocal.getById(id)
+    }
+
 
     override suspend fun getProfileAnswer(questionId: String): AnswerDto? {
         return profileLocal.getAnswer(questionId)
     }
+
+    override suspend fun endSession() {
+        if (currentSessionId.isNotEmpty()) {
+            AppLogger.d("REPO", "ENDING SESSION → $currentSessionId")
+            api.endSession(currentSessionId)
+            currentSessionId = ""
+        }
+    }
+
+
 
 
 

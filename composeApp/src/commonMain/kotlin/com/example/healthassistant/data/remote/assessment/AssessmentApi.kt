@@ -22,6 +22,9 @@ interface AssessmentApi {
         request: SubmitReportRequestDto
     ): ReportResponseDto
 
+    suspend fun endSession(sessionId: String)
+
+
 
 
 }

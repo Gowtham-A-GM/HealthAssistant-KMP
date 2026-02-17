@@ -22,7 +22,9 @@ import com.example.healthassistant.presentation.history.SectionTitle
 fun AssessmentReportScreen(
     report: Report,
     onBack: () -> Unit,
-    onCauseClick: (PossibleCause) -> Unit
+    onCauseClick: (PossibleCause) -> Unit,
+    onGoHome: () -> Unit
+
 ) {
 
     Column(
@@ -74,7 +76,7 @@ fun AssessmentReportScreen(
 
             // ✅ Patient Info (NEW)
             Text(
-                text = "${report.patientInfo.name}, ${report.patientInfo.gender}, ${report.patientInfo.age} years old",
+                text = "${report.patientInfo?.name}, ${report.patientInfo?.gender}, ${report.patientInfo?.age} years old",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
@@ -163,7 +165,22 @@ fun AssessmentReportScreen(
                 Text("Download Health Report")
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onGoHome,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(26.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Text("Go to Home Screen")
+            }
+
         }
     }
 }

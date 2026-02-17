@@ -355,4 +355,21 @@ class AssessmentViewModel(
         speakQuestionIfNeeded(question)
     }
 
+    fun endAssessment(onFinished: () -> Unit) {
+
+        viewModelScope.launch {
+
+            try {
+                repository.endSession()
+            } catch (e: Exception) {
+                AppLogger.d("VM", "END SESSION ERROR → ${e.message}")
+            }
+
+            _state.value = AssessmentState() // Reset state
+
+            onFinished()
+        }
+    }
+
+
 }

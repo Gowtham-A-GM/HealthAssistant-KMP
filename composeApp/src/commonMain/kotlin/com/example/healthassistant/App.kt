@@ -23,6 +23,7 @@ import com.example.healthassistant.core.stt.SpeechToTextManager
 import com.example.healthassistant.core.tts.TextToSpeechManager
 import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSourceImpl
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSourceImpl
+import com.example.healthassistant.data.local.report.ReportLocalDataSourceImpl
 import com.example.healthassistant.data.repository.NewsRepositoryImpl
 import com.example.healthassistant.db.HealthDatabase
 import com.example.healthassistant.presentation.assessment.AssessmentCauseDetailScreen
@@ -94,13 +95,20 @@ fun App(
             ProfileLocalDataSourceImpl(database)
         }
 
+        val reportLocal = remember {
+            ReportLocalDataSourceImpl(database)
+        }
+
+
         val repository = remember {
             AssessmentRepositoryImpl(
                 api = api,
                 sessionLocal = sessionLocal,
-                profileLocal = profileLocal
+                profileLocal = profileLocal,
+                reportLocal = reportLocal
             )
         }
+
 
 
 
@@ -162,8 +170,14 @@ fun App(
                                 onBack = { currentScreen = AppScreen.Home },
                                 onCauseClick = { cause ->
                                     currentScreen = AppScreen.AssessmentCauseDetail(cause)
+                                },
+                                onGoHome = {
+                                    assessmentViewModel.endAssessment {
+                                        currentScreen = AppScreen.Home
+                                    }
                                 }
                             )
+
                         }
                     }
 

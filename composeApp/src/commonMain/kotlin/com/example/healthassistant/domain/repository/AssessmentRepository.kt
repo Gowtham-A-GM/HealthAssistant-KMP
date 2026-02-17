@@ -21,6 +21,10 @@ interface AssessmentRepository {
 
     suspend fun getProfileAnswer(questionId: String): AnswerDto?
 
+    suspend fun getAllReports(): List<Report>
+    suspend fun getReportById(id: String): Report?
+
+    suspend fun endSession()
 
 
 

@@ -1,5 +1,7 @@
 package com.example.healthassistant.domain.model.assessment
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class PossibleCause(
     val id: String,
     val title: String,

@@ -63,6 +63,12 @@ class AssessmentApiImpl(
     }
 
 
+    override suspend fun endSession(sessionId: String) {
+        client.post("$baseUrl/assessment/end") {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf("session_id" to sessionId))
+        }
+    }
 
 
 
