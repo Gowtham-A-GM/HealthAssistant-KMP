@@ -1,6 +1,7 @@
 package com.example.healthassistant.presentation.assessment
 
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.VolumeUp
@@ -41,14 +43,27 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.designsystem.AppColors
+import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.domain.model.assessment.ResponseOption
+import com.example.healthassistant.presentation.assessment.components.AssessmentTopHeader
+import com.example.healthassistant.presentation.assessment.components.AvatarSection
+import com.example.healthassistant.presentation.assessment.components.BottomAssessmentControls
+import com.example.healthassistant.presentation.assessment.components.GradientOptionButton
+import com.example.healthassistant.presentation.assessment.components.GradientTextInput
+import com.example.healthassistant.presentation.assessment.components.QuestionSection
 import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
 import healthassistant.composeapp.generated.resources.Res
 import healthassistant.composeapp.generated.resources.img_avatar
 import org.jetbrains.compose.resources.painterResource
 import healthassistant.composeapp.generated.resources.img_user_avatar
+
+
 
 
 @Composable
@@ -58,6 +73,8 @@ fun AssessmentScreen(
     onReportGenerated: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    var showExitDialog by remember { mutableStateOf(false) }
+    var showLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.report) {
         if (state.report != null) {
@@ -65,22 +82,62 @@ fun AssessmentScreen(
         }
     }
 
-
-
-    LaunchedEffect(key1 = state.sessionId) {
+    LaunchedEffect(state.sessionId) {
         if (state.sessionId.isEmpty()) {
             AppLogger.d("UI", "AssessmentScreen launched → calling startAssessment()")
             viewModel.startAssessment()
         }
     }
 
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("End Assessment") },
+            text = { Text("Assessment will be ended. Do you want to continue?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showExitDialog = false
+                        viewModel.endAssessment { onExit() }
+                    }
+                ) {
+                    Text("YES", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showExitDialog = false }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
+
+    LaunchedEffect(state.isLoading, state.isGeneratingReport) {
+
+        if (state.isLoading || state.isGeneratingReport) {
+
+            // Wait 3 seconds before showing loader
+            kotlinx.coroutines.delay(1000)
+
+            // If still loading after delay → show
+            if (state.isLoading || state.isGeneratingReport) {
+                showLoading = true
+            }
+
+        } else {
+            // Immediately hide when loading finishes
+            showLoading = false
+        }
+    }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+        state.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
             viewModel.clearError()
         }
     }
@@ -96,152 +153,77 @@ fun AssessmentScreen(
                 .background(MaterialTheme.colorScheme.background)
         ) {
 
-            if (state.isGeneratingReport) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-                return@Scaffold
-            }
-
-            // 🔹 Scrollable Content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(bottom = 100.dp) // small safe space
-                    .statusBarsPadding(),
+                    .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                if (state.isLoading) {
-                    Spacer(modifier = Modifier.height(120.dp))
-                    CircularProgressIndicator()
-                    return@Column
-                }
+                AssessmentTopHeader(
+                    onClose = { showExitDialog = true }
+                )
 
-                // ───────── TOP BAR ─────────
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "New Assessment",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Spacer(modifier = Modifier.height(32.dp))
 
-                Spacer(modifier = Modifier.height(40.dp))
-
-                // Avatar
-                Box(contentAlignment = Alignment.Center) {
-
-                    Box(
-                        modifier = Modifier
-                            .size(220.dp)
-                            .background(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                CircleShape
-                            )
-                    )
-
-                    Image(
-                        painter = painterResource(Res.drawable.img_avatar),
-                        contentDescription = "Assessment Avatar",
-                        modifier = Modifier
-                            .size(180.dp)
-                            .clip(CircleShape)
-                    )
-                }
-
+                AvatarSection(
+                    isMuted = state.isMuted,
+                    isSpeaking = !state.isMuted
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 state.currentQuestion?.let { question ->
 
-                    Text(
-                        text = question.text,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 32.dp)
-                    )
+                    QuestionSection(text = question.text)
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
 
                     when (question.responseType) {
 
-                        // 🔢 NUMBER OR TEXT INPUT
-                        "number", "text" -> {
+                        "text", "number" -> {
 
-                            OutlinedTextField(
+                            GradientTextInput(
                                 value = state.typedText,
                                 onValueChange = {
                                     viewModel.onEvent(
                                         AssessmentEvent.TextChanged(it)
                                     )
                                 },
-                                placeholder = { Text("Type your answer") },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 32.dp),
-                                shape = RoundedCornerShape(20.dp),
-                                singleLine = true
+                                onSubmit = {
+                                    viewModel.onEvent(
+                                        AssessmentEvent.SendText
+                                    )
+                                }
                             )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Button(
-                                onClick = {
-                                    viewModel.onEvent(AssessmentEvent.SendText)
-                                },
-                                enabled = state.typedText.isNotBlank(),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 32.dp)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(24.dp)
-                            ) {
-                                Text("Submit")
-                            }
                         }
 
-                        // 🔘 SINGLE / MULTI CHOICE
                         "single_choice", "multi_choice" -> {
 
-                            val options = question.responseOptions ?: emptyList()
+                            val options =
+                                question.responseOptions ?: emptyList()
 
                             if (options.size <= 4) {
-                                // 🔘 Show as buttons
+
                                 options.forEach { option ->
 
-                                    Button(
+                                    GradientOptionButton(
+                                        text = option.label,
                                         onClick = {
                                             viewModel.onEvent(
                                                 AssessmentEvent.OptionSelected(option.id)
                                             )
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 40.dp)
-                                            .height(52.dp),
-                                        shape = RoundedCornerShape(26.dp)
-                                    ) {
-                                        Text(option.label)
-                                    }
+                                        }
+                                    )
 
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Spacer(modifier = Modifier.height(16.dp))
                                 }
 
                             } else {
-                                // ⬇️ Show as dropdown
-                                OptionDropdown(
+
+                                StyledDropdown(
                                     options = options,
+                                    questionId = question.id,
                                     onOptionSelected = { selectedId ->
                                         viewModel.onEvent(
                                             AssessmentEvent.OptionSelected(selectedId)
@@ -250,71 +232,115 @@ fun AssessmentScreen(
                                 )
                             }
                         }
+                    }
+                }
 
+                Spacer(modifier = Modifier.weight(1f))
+
+            }
+
+            AnimatedVisibility(
+                visible = showLoading
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f)
+                        )
+                        .pointerInput(Unit) {},
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = if (state.isGeneratingReport)
+                                "Generating your medical report..."
+                            else
+                                "Preparing next question..."
+                        )
                     }
                 }
             }
 
-            // 🔹 FIXED Bottom Bar
             BottomAssessmentControls(
                 isMuted = state.isMuted,
+                isMicOn = state.isListening, // or your mic state
                 onMicClick = {
                     viewModel.onEvent(AssessmentEvent.MicClicked)
                 },
                 onVolumeClick = {
                     viewModel.onEvent(AssessmentEvent.VolumeClicked)
                 },
-                onExit = {
-                    viewModel.onEvent(AssessmentEvent.ExitClicked)
-                    onExit()
-                },
+                onExit = { showExitDialog = true },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
-
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OptionDropdown(
+fun StyledDropdown(
     options: List<ResponseOption>,
+    questionId: String,
     onOptionSelected: (String) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    var selectedLabel by remember { mutableStateOf("Select an option") }
 
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp)
+    var expanded by remember { mutableStateOf(false) }
+    var selectedLabel by remember(questionId) {
+        mutableStateOf("")
+    }
+
+    Box(
+        modifier = Modifier.fillMaxWidth()
     ) {
 
         OutlinedTextField(
             value = selectedLabel,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Select an option") },
+            placeholder = {
+                Text(
+                    if (selectedLabel.isEmpty())
+                        "Select an option"
+                    else
+                        selectedLabel
+                )
+            },
             trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null
+                )
             },
             modifier = Modifier
-                .menuAnchor()
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(28.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF5A8DEE),
+                unfocusedBorderColor = Color(0xFFB0C4FF)
+            )
         )
 
-        ExposedDropdownMenu(
+        // 👇 Invisible click layer over entire field
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { expanded = true }
+        )
+
+        DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 250.dp)   // 👈 IMPORTANT
+                .heightIn(max = 250.dp)
         ) {
+
             options.forEach { option ->
+
                 DropdownMenuItem(
                     text = { Text(option.label) },
                     onClick = {
@@ -326,85 +352,10 @@ fun OptionDropdown(
             }
         }
     }
-
-    Spacer(modifier = Modifier.height(16.dp))
 }
 
 
 
-
-@Composable
-fun BottomAssessmentControls(
-    isMuted: Boolean,
-    onMicClick: () -> Unit,
-    onVolumeClick: () -> Unit,
-    onExit: () -> Unit,
-    modifier: Modifier = Modifier
-)
-
-{
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(16.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                ActionIcon(Icons.Default.Videocam)
-
-                // 🎤 MIC (STT)
-                ActionIcon(
-                    icon = Icons.Default.Mic,
-                    onClick = onMicClick
-                )
-
-                // 🔊 VOLUME (TTS)
-                ActionIcon(
-                    icon = if (isMuted)
-                        Icons.Default.VolumeOff
-                    else
-                        Icons.Default.VolumeUp,
-                    onClick = onVolumeClick
-                )
-
-                // ⋮ More
-                ActionIcon(Icons.Default.MoreVert)
-            }
-
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Exit button
-            Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .background(Color.Red, CircleShape)
-                    .clickable { onExit() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Exit",
-                    tint = Color.White
-                )
-            }
-        }
-    }
-}
 
 
 @Composable

@@ -31,6 +31,13 @@ object AppColors {
             colors = listOf(gradientStart, gradientEnd)
         )
 
+    val gradient2Start = AppColors.blue
+    val gradient2End = AppColors.darkBlue
+    val secondaryGradient: Brush
+        get() = Brush.horizontalGradient(
+            colors = listOf(gradientStart, gradientEnd)
+        )
+
 
     // Backgrounds
     val background = Color(0xFFF2F8FF)

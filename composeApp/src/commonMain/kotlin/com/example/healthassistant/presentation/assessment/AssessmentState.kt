@@ -6,7 +6,7 @@ import com.example.healthassistant.presentation.assessment.model.AnswerUiModel
 import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
 
 data class AssessmentState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val sessionId: String = "",
     val currentQuestion: Question? = null,
     val typedText: String = "",
@@ -16,7 +16,7 @@ data class AssessmentState(
     val errorMessage: String? = null,
     val isCompleted: Boolean = false,
     val report: Report? = null,
-    val isGeneratingReport: Boolean = false
+    val isGeneratingReport: Boolean = false,
 
 
 )

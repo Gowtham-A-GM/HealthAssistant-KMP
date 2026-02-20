@@ -58,76 +58,40 @@ import org.jetbrains.compose.resources.painterResource
 import healthassistant.composeapp.generated.resources.img_user_avatar
 
 @Composable
-fun AvatarSection(
-    isMuted: Boolean,
-    isSpeaking: Boolean
+fun AssessmentTextInput(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    enabled: Boolean
 ) {
-
-    val infiniteTransition = rememberInfiniteTransition()
-
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = if (isSpeaking) 1.35f else 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = if (isSpeaking) 700 else 1600
-            ),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.2f,
-        targetValue = if (isSpeaking) 0.45f else 0.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = if (isSpeaking) 700 else 1600
-            ),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
-    Box(
-        modifier = Modifier.size(240.dp),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
 
-        // 🌊 OUTER PULSE (slightly bigger)
-        Box(
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                Text("Type your answer")
+            },
             modifier = Modifier
-                .size(200.dp) // bigger than inner circle
-                .graphicsLayer {
-                    scaleX = pulseScale
-                    scaleY = pulseScale
-                }
-                .background(
-                    color = Color(0xFF5A8DEE).copy(alpha = pulseAlpha),
-                    shape = CircleShape
-                )
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF5A8DEE),
+                unfocusedBorderColor = Color(0xFFB8C6E3),
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            )
         )
 
-        // INNER CIRCLE (slightly smaller)
-        Box(
-            modifier = Modifier
-                .size(170.dp)
-                .background(
-                    color = Color(0xFFE9F1FF),
-                    shape = CircleShape
-                )
-                .border(
-                    width = 2.dp,
-                    color = Color(0xFF5A8DEE).copy(alpha = 0.25f),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.img_avatar),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(130.dp)
-                    .clip(CircleShape)
-            )
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        GradientOptionButton(
+            text = "Submit",
+            onClick = onSubmit
+        )
     }
 }

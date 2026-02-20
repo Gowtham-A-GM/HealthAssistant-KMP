@@ -59,7 +59,7 @@ fun App(
         val api = remember {
             AssessmentApiImpl(
                 client = NetworkClient.httpClient,
-                baseUrl = "https://c4ca-49-43-248-205.ngrok-free.app"
+                baseUrl = "https://f9ae-223-237-184-184.ngrok-free.app"
             )
         }
 
@@ -88,7 +88,7 @@ fun App(
         val chatApi = remember {
             ChatApiImpl(
                 client = NetworkClient.httpClient,
-                baseUrl = "https://c4ca-49-43-248-205.ngrok-free.app"
+                baseUrl = "https://f9ae-223-237-184-184.ngrok-free.app"
             )
         }
 

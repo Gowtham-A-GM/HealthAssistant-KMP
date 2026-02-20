@@ -48,8 +48,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.designsystem.AppColors
+import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.domain.model.assessment.ResponseOption
 import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
 import healthassistant.composeapp.generated.resources.Res
@@ -58,76 +61,23 @@ import org.jetbrains.compose.resources.painterResource
 import healthassistant.composeapp.generated.resources.img_user_avatar
 
 @Composable
-fun AvatarSection(
-    isMuted: Boolean,
-    isSpeaking: Boolean
+fun QuestionSection(
+    text: String
 ) {
-
-    val infiniteTransition = rememberInfiniteTransition()
-
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = if (isSpeaking) 1.35f else 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = if (isSpeaking) 700 else 1600
-            ),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.2f,
-        targetValue = if (isSpeaking) 0.45f else 0.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = if (isSpeaking) 700 else 1600
-            ),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
-    Box(
-        modifier = Modifier.size(240.dp),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        // 🌊 OUTER PULSE (slightly bigger)
-        Box(
-            modifier = Modifier
-                .size(200.dp) // bigger than inner circle
-                .graphicsLayer {
-                    scaleX = pulseScale
-                    scaleY = pulseScale
-                }
-                .background(
-                    color = Color(0xFF5A8DEE).copy(alpha = pulseAlpha),
-                    shape = CircleShape
-                )
+        Text(
+            text = text,
+            style = AppTypography.poppinsSemiBold().copy(
+                fontSize = 16.sp
+            ),
+            textAlign = TextAlign.Center,
+            lineHeight = 26.sp,
+            color = AppColors.heavyBlue
         )
-
-        // INNER CIRCLE (slightly smaller)
-        Box(
-            modifier = Modifier
-                .size(170.dp)
-                .background(
-                    color = Color(0xFFE9F1FF),
-                    shape = CircleShape
-                )
-                .border(
-                    width = 2.dp,
-                    color = Color(0xFF5A8DEE).copy(alpha = 0.25f),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.img_avatar),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(130.dp)
-                    .clip(CircleShape)
-            )
-        }
     }
 }

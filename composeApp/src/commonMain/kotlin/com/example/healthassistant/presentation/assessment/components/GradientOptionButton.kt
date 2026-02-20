@@ -40,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
@@ -53,51 +54,31 @@ import healthassistant.composeapp.generated.resources.img_avatar
 import org.jetbrains.compose.resources.painterResource
 import healthassistant.composeapp.generated.resources.img_user_avatar
 
+
 @Composable
-fun AssessmentTopHeader(
-    onClose: () -> Unit
+fun GradientOptionButton(
+    text: String,
+    onClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(54.dp)
+            .background(
+                AppColors.secondaryGradient,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
     ) {
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
-            Text(
-                text = "New Assessment",
-                style = AppTypography.poppinsSemiBold().copy(
-                    fontSize = 20.sp
-                ),
-                color = AppColors.darkBlue
-            )
-
-            Icon(
-                painter = painterResource(Res.drawable.ic_close),
-                contentDescription = "Close",
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable { onClose() },
-                tint = AppColors.darkBlue
-            )
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        // Blue underline
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(
-                    MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(2.dp)
-                )
+        Text(
+            text = text,
+            style = AppTypography.poppinsSemiBold().copy(
+                fontSize = 14.sp
+            ),
+            textAlign = TextAlign.Center,
+            color = Color.White
         )
     }
 }

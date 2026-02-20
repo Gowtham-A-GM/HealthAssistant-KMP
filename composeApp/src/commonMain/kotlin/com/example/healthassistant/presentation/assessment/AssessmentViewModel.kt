@@ -21,6 +21,8 @@ class AssessmentViewModel(
     private val _state = MutableStateFlow(AssessmentState(isLoading = true))
     val state: StateFlow<AssessmentState> = _state
 
+    val voiceAmplitude: Float = 0f  // 0f → 1f
+
 
     // ✅ START ASSESSMENT
     fun startAssessment() {

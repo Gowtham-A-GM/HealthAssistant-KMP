@@ -53,51 +53,37 @@ import healthassistant.composeapp.generated.resources.img_avatar
 import org.jetbrains.compose.resources.painterResource
 import healthassistant.composeapp.generated.resources.img_user_avatar
 
+
 @Composable
-fun AssessmentTopHeader(
-    onClose: () -> Unit
+fun GradientTextInput(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSubmit: () -> Unit
 ) {
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
 
-        Row(
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("Type your answer") },
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
-            Text(
-                text = "New Assessment",
-                style = AppTypography.poppinsSemiBold().copy(
-                    fontSize = 20.sp
-                ),
-                color = AppColors.darkBlue
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = AppColors.darkBlue.copy(alpha = 0.25f),
+                unfocusedBorderColor = AppColors.darkBlue
             )
+        )
 
-            Icon(
-                painter = painterResource(Res.drawable.ic_close),
-                contentDescription = "Close",
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable { onClose() },
-                tint = AppColors.darkBlue
-            )
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(6.dp))
-
-        // Blue underline
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(
-                    MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(2.dp)
-                )
+        GradientOptionButton(
+            text = "Submit",
+            onClick = onSubmit
         )
     }
 }
