@@ -22,12 +22,18 @@ import com.example.healthassistant.core.platform.PlatformBackHandler
 import com.example.healthassistant.core.stt.SpeechToTextManager
 import com.example.healthassistant.core.tts.TextToSpeechManager
 import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSourceImpl
+import com.example.healthassistant.data.local.chat.ChatLocalDataSourceImpl
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSourceImpl
 import com.example.healthassistant.data.local.report.ReportLocalDataSourceImpl
+import com.example.healthassistant.data.remote.chat.ChatApiImpl
+import com.example.healthassistant.data.repository.ChatRepositoryImpl
 import com.example.healthassistant.data.repository.NewsRepositoryImpl
 import com.example.healthassistant.db.HealthDatabase
 import com.example.healthassistant.presentation.assessment.AssessmentCauseDetailScreen
 import com.example.healthassistant.presentation.assessment.AssessmentReportScreen
+import com.example.healthassistant.presentation.chat.ChatScreen
+import com.example.healthassistant.presentation.chat.ChatViewModel
+import com.example.healthassistant.presentation.home.EmergencyAction
 //import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSourceImpl
 import com.example.healthassistant.presentation.home.HomeScreen
 import com.example.healthassistant.presentation.home.HomeViewModel
@@ -38,52 +44,22 @@ fun App(
     speechToTextManager: SpeechToTextManager,
     ttsManager: TextToSpeechManager,
     database: HealthDatabase,
-    newsApiKey: String
+    newsApiKey: String,
+    onEmergencyAction: (EmergencyAction, String?) -> Unit
 ) {
 
     HealthAssistantTheme {
 
         var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
 
-        PlatformBackHandler {
 
-            currentScreen = when (currentScreen) {
-
-                is AppScreen.AssessmentCauseDetail ->
-                    AppScreen.AssessmentReport
-
-                AppScreen.AssessmentReport ->
-                    AppScreen.Assessment
-
-                AppScreen.Assessment ->
-                    AppScreen.Home
-
-                is AppScreen.CauseDetail ->
-                    AppScreen.HistoryDetail
-
-                AppScreen.HistoryDetail ->
-                    AppScreen.History
-
-                AppScreen.History ->
-                    AppScreen.Home
-
-                AppScreen.News ->
-                    AppScreen.Home
-
-                AppScreen.Home ->
-                    AppScreen.Home
-
-                else ->
-                    AppScreen.Home
-            }
-        }
 
 
         // ✅ API
         val api = remember {
             AssessmentApiImpl(
                 client = NetworkClient.httpClient,
-                baseUrl = "https://9bad-2405-201-e012-2038-1824-3bef-9800-63e3.ngrok-free.app"
+                baseUrl = "https://c4ca-49-43-248-205.ngrok-free.app"
             )
         }
 
@@ -108,6 +84,34 @@ fun App(
                 reportLocal = reportLocal
             )
         }
+
+        val chatApi = remember {
+            ChatApiImpl(
+                client = NetworkClient.httpClient,
+                baseUrl = "https://c4ca-49-43-248-205.ngrok-free.app"
+            )
+        }
+
+        val chatLocal = remember {
+            ChatLocalDataSourceImpl(database)
+        }
+
+        val chatRepository = remember {
+            ChatRepositoryImpl(
+                api = chatApi,
+                local = chatLocal,
+                profileLocal = profileLocal,
+                reportLocal = reportLocal
+            )
+        }
+
+        val chatViewModel = remember {
+            ChatViewModel(
+                repository = chatRepository
+            )
+        }
+
+
 
 
 
@@ -138,6 +142,44 @@ fun App(
             NewsViewModel(newsRepository)
         }
 
+        PlatformBackHandler {
+
+            currentScreen = when (currentScreen) {
+
+                is AppScreen.Chat -> AppScreen.Home
+
+                is AppScreen.AssessmentCauseDetail ->
+                    AppScreen.AssessmentReport
+
+                AppScreen.AssessmentReport ->
+                    AppScreen.Assessment
+
+                AppScreen.Assessment ->
+                    AppScreen.Home
+
+                is AppScreen.CauseDetail ->
+                    AppScreen.HistoryDetail
+
+                AppScreen.HistoryDetail ->
+                    AppScreen.History
+
+                AppScreen.History ->
+                    AppScreen.Home
+
+                AppScreen.News ->
+                    AppScreen.Home
+
+                AppScreen.Home ->
+                    AppScreen.Home
+
+                else ->
+                    AppScreen.Home
+            }
+        }
+
+        // Temporary hardcoded emergency contact (will replace later)
+        val emergencyContactNumber = "6374102550"
+
 
         Column {
             Box(modifier = Modifier.weight(1f)) {
@@ -147,8 +189,16 @@ fun App(
                         viewModel = HomeViewModel(
                             onStartAssessment = {
                                 currentScreen = AppScreen.Assessment
+                            },
+                            onOpenChat = {
+                                currentScreen = AppScreen.Chat(reportId = null)
                             }
-                        )
+                        ),
+                        onEmergencyAction = { action ->
+                            AppLogger.d("EMERGENCY", "App.kt received action: $action")
+                            AppLogger.d("EMERGENCY", "Using phone number: $emergencyContactNumber")
+                            onEmergencyAction(action, emergencyContactNumber)
+                        }
                     )
 
                     AppScreen.Assessment -> AssessmentScreen(
@@ -175,12 +225,26 @@ fun App(
                                     assessmentViewModel.endAssessment {
                                         currentScreen = AppScreen.Home
                                     }
+                                },
+                                onAskChatbot = {
+                                    assessmentViewModel.endAssessment {
+                                        currentScreen = AppScreen.Chat(reportId = report.reportId)
+                                    }
                                 }
                             )
+
 
                         }
                     }
 
+
+                    is AppScreen.Chat -> ChatScreen(
+                        viewModel = chatViewModel,
+                        currentReportId = (currentScreen as AppScreen.Chat).reportId,
+                        onBack = {
+                            currentScreen = AppScreen.Home
+                        }
+                    )
 
 
 

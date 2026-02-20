@@ -40,7 +40,7 @@ fun SuggestionChips(
                 Text(
                     text = text,
                     style = AppTypography.poppinsMedium().copy(
-                        fontSize = 12.sp
+                        fontSize = 11.sp
                     ),
                     color = AppColors.textSecondary
                 )

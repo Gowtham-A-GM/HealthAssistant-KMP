@@ -5,7 +5,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class HomeViewModel(
-    private val onStartAssessment: () -> Unit
+    private val onStartAssessment: () -> Unit,
+    private val onOpenChat: () -> Unit
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -13,6 +14,10 @@ class HomeViewModel(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
+
+            HomeEvent.OpenChat -> {
+                onOpenChat()
+            }
 
             HomeEvent.StartAssessment -> {
                 onStartAssessment()

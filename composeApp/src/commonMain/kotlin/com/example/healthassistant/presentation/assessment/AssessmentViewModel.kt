@@ -41,7 +41,7 @@ class AssessmentViewModel(
 
                 AppLogger.d(
                     "VM",
-                    "START SUCCESS → sessionId=${session.sessionId}, question=${session.question.text}}"
+                    "START SUCCESS → sessionId=${session.sessionId}, question=${session.question.text}"
                 )
 
                 _state.value = _state.value.copy(

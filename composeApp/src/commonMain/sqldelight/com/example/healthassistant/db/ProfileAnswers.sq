@@ -1,12 +1,13 @@
     CREATE TABLE profile_answers (
         question_id TEXT NOT NULL PRIMARY KEY,
+        question_text TEXT NOT NULL,
         answer_json TEXT NOT NULL
     );
 
     -- Insert or replace (since question_id is PRIMARY KEY)
     insertOrReplace:
-    INSERT OR REPLACE INTO profile_answers(question_id, answer_json)
-    VALUES (?, ?);
+    INSERT OR REPLACE INTO profile_answers(question_id, question_text, answer_json)
+    VALUES (?, ?, ?);
 
     getById:
     SELECT * FROM profile_answers
@@ -14,3 +15,7 @@
 
     deleteAll:
     DELETE FROM profile_answers;
+
+    selectAll:
+    SELECT * FROM profile_answers;
+

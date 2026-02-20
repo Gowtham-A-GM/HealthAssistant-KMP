@@ -13,9 +13,6 @@ sealed class AppScreen {
         val cause: PossibleCause
     ) : AppScreen()
 
-
-
-
     object History : AppScreen()
     object News : AppScreen()
 
@@ -23,4 +20,6 @@ sealed class AppScreen {
 
     object HistoryDetail : AppScreen()
     data class CauseDetail(val title: String) : AppScreen()
+
+    data class Chat(val reportId: String?) : AppScreen()
 }

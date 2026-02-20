@@ -17,9 +17,10 @@ data class HomeState(
     // Suggestion Chips
     val suggestions: List<String> = listOf(
         "I have fever",
-        "My head hurts",
+        "Stomach hurts",
         "Coughing",
-        "Stomach pain",
+        "Headache",
+        "Chest pain",
         "I'm feeling very tired from morning"
     ),
 

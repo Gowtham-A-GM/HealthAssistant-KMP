@@ -23,8 +23,8 @@ fun AssessmentReportScreen(
     report: Report,
     onBack: () -> Unit,
     onCauseClick: (PossibleCause) -> Unit,
-    onGoHome: () -> Unit
-
+    onGoHome: () -> Unit,
+    onAskChatbot: () -> Unit
 ) {
 
     Column(
@@ -180,6 +180,19 @@ fun AssessmentReportScreen(
             ) {
                 Text("Go to Home Screen")
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onAskChatbot,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(26.dp)
+            ) {
+                Text("Ask Remy Chatbot")
+            }
+
 
         }
     }

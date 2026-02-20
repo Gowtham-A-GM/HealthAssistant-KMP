@@ -13,6 +13,9 @@ object AppColors {
     val dustyGray = Color(0xFF9CA3AF)
     val highlightYellow = Color(0xFFFFD54F)
 
+    // BG
+    val darkGray = Color(0xFF2a3855)
+
 
     // Text
     val textPrimary = heavyBlue

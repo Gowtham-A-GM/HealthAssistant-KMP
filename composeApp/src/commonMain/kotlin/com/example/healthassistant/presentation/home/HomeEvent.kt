@@ -13,4 +13,6 @@ sealed class HomeEvent {
     ) : HomeEvent()
 
     object SettingsClicked : HomeEvent()
+
+    object OpenChat : HomeEvent()
 }
