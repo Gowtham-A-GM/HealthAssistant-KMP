@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
 import com.example.healthassistant.designsystem.AppTypography
@@ -31,7 +32,7 @@ fun RemyChatCard(
     ) {
 
         Text(
-            text = "Get Instant Health Advice",
+            text = t("Get Instant Health Advice"),
             style = AppTypography.poppinsRegular().copy(
                 fontSize = 14.sp
             ),
@@ -50,7 +51,7 @@ fun RemyChatCard(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Ask Remy Ai",
+                text = t("Ask Remy Ai"),
                 style = AppTypography.poppinsSemiBold().copy(
                     fontSize = 14.sp
                 ),

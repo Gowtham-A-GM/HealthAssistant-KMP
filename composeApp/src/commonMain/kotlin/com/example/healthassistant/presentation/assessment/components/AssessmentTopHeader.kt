@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.domain.model.assessment.ResponseOption
@@ -70,7 +71,7 @@ fun AssessmentTopHeader(
         ) {
 
             Text(
-                text = "New Assessment",
+                text = t("New Assessment"),
                 style = AppTypography.poppinsSemiBold().copy(
                     fontSize = 20.sp
                 ),
@@ -79,7 +80,7 @@ fun AssessmentTopHeader(
 
             Icon(
                 painter = painterResource(Res.drawable.ic_close),
-                contentDescription = "Close",
+                contentDescription = t("Close"),
                 modifier = Modifier
                     .size(24.dp)
                     .clickable { onClose() },

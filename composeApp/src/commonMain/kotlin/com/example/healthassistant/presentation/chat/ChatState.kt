@@ -7,5 +7,7 @@ data class ChatState(
     val sessionId: String? = null,
     val messages: List<ChatMessage> = emptyList(),
     val typedMessage: String = "",
-    val error: String? = null
+    val error: String? = null,
+    val isListening: Boolean = false,   // 🎤
+    val isTtsEnabled: Boolean = true    // 🔊
 )

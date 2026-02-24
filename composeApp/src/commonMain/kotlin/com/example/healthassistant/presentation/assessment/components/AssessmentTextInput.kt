@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.ResponseOption
 import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
 import healthassistant.composeapp.generated.resources.Res
@@ -72,7 +73,7 @@ fun AssessmentTextInput(
             value = value,
             onValueChange = onValueChange,
             placeholder = {
-                Text("Type your answer")
+                Text(t("Type your answer"))
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -90,7 +91,7 @@ fun AssessmentTextInput(
         Spacer(modifier = Modifier.height(16.dp))
 
         GradientOptionButton(
-            text = "Submit",
+            text = t("Submit"),
             onClick = onSubmit
         )
     }

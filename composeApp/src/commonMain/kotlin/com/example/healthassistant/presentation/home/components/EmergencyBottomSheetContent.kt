@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.presentation.home.EmergencyAction
@@ -46,7 +47,7 @@ fun EmergencyBottomSheetContent(
 
             // Title
             Text(
-                text = "Emergency Assistance",
+                text = t("Emergency Assistance"),
                 style = AppTypography.poppinsSemiBold().copy(
                     fontSize = 18.sp
                 ),
@@ -57,7 +58,7 @@ fun EmergencyBottomSheetContent(
 
             // Subtitle
             Text(
-                text = "If this is a medical emergency, act immediately",
+                text = t("If this is a medical emergency, act immediately"),
                 style = AppTypography.poppinsMedium().copy(
                     fontSize = 12.sp
                 ),

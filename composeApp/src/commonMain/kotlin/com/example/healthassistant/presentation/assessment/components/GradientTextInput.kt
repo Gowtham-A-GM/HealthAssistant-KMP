@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.domain.model.assessment.ResponseOption
@@ -68,7 +69,7 @@ fun GradientTextInput(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text("Type your answer") },
+            placeholder = { Text(t("Type your answer")) },
             modifier = Modifier
                 .fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
@@ -82,7 +83,7 @@ fun GradientTextInput(
         Spacer(modifier = Modifier.height(16.dp))
 
         GradientOptionButton(
-            text = "Submit",
+            text = t("Submit"),
             onClick = onSubmit
         )
     }

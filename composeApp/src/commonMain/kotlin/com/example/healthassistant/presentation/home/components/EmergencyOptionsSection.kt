@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.healthassistant.core.utils.t
 import healthassistant.composeapp.generated.resources.Res
 import healthassistant.composeapp.generated.resources.img_ambulance
 import healthassistant.composeapp.generated.resources.img_familyalert
@@ -30,16 +31,16 @@ fun EmergencyOptionsSection(
     ) {
 
         EmergencyOptionCard(
-            title = "Ambulance (108)",
-            description = "Call emergency ambulance immediately.",
+            title = t("Ambulance (108)"),
+            description = t("Call emergency ambulance immediately."),
             icon = Res.drawable.img_ambulance,
             selected = ambulanceSelected,
             onClick = onAmbulanceClick
         )
 
         EmergencyOptionCard(
-            title = "Alert Family",
-            description = "Alert your family members.",
+            title = t("Alert Family"),
+            description = t("Alert your family members."),
             icon = Res.drawable.img_familyalert,
             selected = familySelected,
             onClick = onFamilyClick

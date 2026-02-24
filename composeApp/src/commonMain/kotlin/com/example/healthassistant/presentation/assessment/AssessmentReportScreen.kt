@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.statusBarsPadding
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.PossibleCause
 import com.example.healthassistant.domain.model.assessment.Report
 import com.example.healthassistant.presentation.history.Bullet
@@ -42,7 +43,7 @@ fun AssessmentReportScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Assessment Report",
+                text = t("Assessment Report"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -61,13 +62,13 @@ fun AssessmentReportScreen(
 
             // ───── Meta Info ─────
             Text(
-                text = "Report ID: ${report.reportId}",
+                text = t("Report ID: ${report.reportId}"),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = "Generated at: ${report.generatedAt}",
+                text = t("Generated at: ${report.generatedAt}"),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -76,7 +77,7 @@ fun AssessmentReportScreen(
 
             // ✅ Patient Info (NEW)
             Text(
-                text = "${report.patientInfo?.name}, ${report.patientInfo?.gender}, ${report.patientInfo?.age} years old",
+                text = t("${report.patientInfo?.name}, ${report.patientInfo?.gender}, ${report.patientInfo?.age} years old"),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
@@ -85,7 +86,7 @@ fun AssessmentReportScreen(
 
             // ───── Urgency ─────
             Text(
-                text = "Urgency: ${report.urgencyLevel.replace("_", " ").uppercase()}",
+                text = t("Urgency: ${report.urgencyLevel.replace("_", " ").uppercase()}"),
                 color = when (report.urgencyLevel) {
                     "emergency" -> Color.Red
                     "doctor_visit_recommended" -> Color(0xFFFFA000)
@@ -98,7 +99,7 @@ fun AssessmentReportScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ───── Summary ─────
-            SectionTitle("Summary")
+            SectionTitle(t("Summary"))
 
             report.summary.forEach {
                 Bullet(it)
@@ -107,12 +108,12 @@ fun AssessmentReportScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ───── Possible Causes ─────
-            SectionTitle("Possible Causes")
+            SectionTitle(t("Possible Causes"))
 
             report.possibleCauses.forEach { cause ->
 
                 CauseItem(
-                    title = cause.title,
+                    title = t(cause.title),
                     description = cause.shortDescription,
                     onTellMore = {
                         onCauseClick(cause)
@@ -136,7 +137,7 @@ fun AssessmentReportScreen(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "${(cause.probability * 100).toInt()}% likelihood",
+                    text = t("${(cause.probability * 100).toInt()}% likelihood"),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -147,7 +148,7 @@ fun AssessmentReportScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ───── Advice ─────
-            SectionTitle("What you were advised")
+            SectionTitle(t("What you were advised"))
 
             report.advice.forEach {
                 Bullet(it)
@@ -162,7 +163,7 @@ fun AssessmentReportScreen(
                     .height(52.dp),
                 shape = RoundedCornerShape(26.dp)
             ) {
-                Text("Download Health Report")
+                Text(t("Download Health Report"))
             }
 
 
@@ -178,7 +179,7 @@ fun AssessmentReportScreen(
                     containerColor = MaterialTheme.colorScheme.secondary
                 )
             ) {
-                Text("Go to Home Screen")
+                Text(t("Go to Home Screen"))
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -190,7 +191,7 @@ fun AssessmentReportScreen(
                     .height(52.dp),
                 shape = RoundedCornerShape(26.dp)
             ) {
-                Text("Ask Remy Chatbot")
+                Text(t("Ask Remy Chatbot"))
             }
 
 

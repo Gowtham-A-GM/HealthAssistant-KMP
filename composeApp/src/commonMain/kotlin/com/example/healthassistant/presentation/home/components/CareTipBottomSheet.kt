@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
 import com.example.healthassistant.designsystem.AppTypography
@@ -103,7 +104,7 @@ fun CareTipBottomSheet(
                 ) {
 
                     Text(
-                        text = "Why ?",
+                        text = t("Why ?"),
                         style = AppTypography.poppinsSemiBold().copy(
                             fontSize = 16.sp
                         ),

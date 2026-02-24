@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 import healthassistant.composeapp.generated.resources.Res
@@ -88,7 +89,7 @@ fun BothServicesRow(
         Spacer(modifier = Modifier.width(12.dp))
 
         Text(
-            text = "Call ambulance and notify family",
+            text = t("Call ambulance and notify family"),
             style = AppTypography.poppinsMedium().copy(fontSize = 12.sp),
             color = AppColors.blue
         )

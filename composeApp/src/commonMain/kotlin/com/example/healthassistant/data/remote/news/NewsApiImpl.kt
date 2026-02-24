@@ -44,7 +44,11 @@ class NewsApiImpl(
         }
             .body<NewsResponseDto>()
 
-        AppLogger.d("NEWS_API", "Page $page -> ${response.articles.size} articles")
+        if (response.status == "error") {
+            AppLogger.d("NEWS_API", "ERROR: ${response.message}")
+        }
+
+        AppLogger.d("NEWS_API", "Page $page -> ${response.articles?.size} articles")
 
         return response
     }

@@ -17,6 +17,7 @@ import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
 import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.core.utils.shareNews
+import com.example.healthassistant.core.utils.t
 import healthassistant.composeapp.generated.resources.Res
 import healthassistant.composeapp.generated.resources.ic_settings
 import healthassistant.composeapp.generated.resources.ic_share
@@ -51,7 +52,7 @@ fun NewsItem(
 
             // Description
             Text(
-                text = description,
+                text = t(description),
                 style = AppTypography.poppinsRegular().copy(
                     fontSize = 12.sp
                 ),
@@ -63,7 +64,7 @@ fun NewsItem(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = if (expanded) "See less" else "See more",
+                text = if (expanded) t("See less") else t("See more"),
                 style = AppTypography.poppinsMedium().copy(
                     fontSize = 11.sp
                 ),
@@ -85,7 +86,7 @@ fun NewsItem(
                 ) {
 
                     Text(
-                        text = sourceName,
+                        text = t(sourceName),
                         style = AppTypography.poppinsMedium().copy(
                             fontSize = 10.sp
                         ),
@@ -95,7 +96,7 @@ fun NewsItem(
                     Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = postedTime,
+                        text = t(postedTime),
                         style = AppTypography.poppinsRegular().copy(
                             fontSize = 10.sp
                         ),
@@ -106,7 +107,7 @@ fun NewsItem(
                 // 🔹 Share Icon
                 Icon(
                     painter = painterResource(Res.drawable.ic_share),
-                    contentDescription = "Share",
+                    contentDescription = t("Share"),
                     modifier = Modifier
                         .size(20.dp)
                         .clickable {

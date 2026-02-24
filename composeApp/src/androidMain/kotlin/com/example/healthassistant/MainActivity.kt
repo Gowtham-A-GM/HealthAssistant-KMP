@@ -12,6 +12,8 @@ import com.example.healthassistant.db.HealthDatabase
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         setContent {
             // 1️⃣ Create database driver
             val driverFactory = DatabaseDriverFactory(this)

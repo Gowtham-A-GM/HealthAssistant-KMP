@@ -9,7 +9,7 @@ import org.jetbrains.compose.resources.DrawableResource
 data class HomeState(
 
     // User
-    val userName: String = "Gowtham",
+    val userName: String = "",
 
     // Greeting (can later compute based on time)
     val greetingText: String = "Good Morning",

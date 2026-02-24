@@ -4,7 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NewsResponseDto(
-    val articles: List<ArticleDto>
+    val status: String,
+    val totalResults: Int? = null,
+    val articles: List<ArticleDto>? = null,
+    val code: String? = null,
+    val message: String? = null
 )
 
 @Serializable

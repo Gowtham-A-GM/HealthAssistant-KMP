@@ -13,6 +13,7 @@
     import androidx.compose.ui.graphics.Color
     import androidx.compose.ui.text.font.FontWeight
     import androidx.compose.ui.unit.dp
+    import com.example.healthassistant.core.utils.t
 
 
     @Composable
@@ -157,7 +158,7 @@
         ) {
             Text("• ")
             Text(
-                text = text,
+                text = t(text),
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -170,7 +171,7 @@
         onTellMore: () -> Unit
     ) {
         Text(
-            text = title,
+            text = t(title),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold
         )
@@ -184,7 +185,7 @@
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = description,
+            text = t(description),
             style = MaterialTheme.typography.bodySmall
         )
 
@@ -199,7 +200,7 @@
                 shape = RoundedCornerShape(20.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
             ) {
-                Text("Tell me more", style = MaterialTheme.typography.bodySmall)
+                Text(t("Tell me more"), style = MaterialTheme.typography.bodySmall)
             }
         }
 

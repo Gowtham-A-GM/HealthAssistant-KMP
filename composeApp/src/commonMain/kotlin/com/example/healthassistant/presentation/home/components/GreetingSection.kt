@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 
@@ -19,7 +20,7 @@ fun GreetingSection(
     Column {
 
         Text(
-            text = "$greetingText, $userName",
+            text = t("$greetingText, $userName"),
             style = AppTypography.poppinsMedium().copy(
                 fontSize = 14.sp
             ),
@@ -29,7 +30,7 @@ fun GreetingSection(
         Spacer(modifier = Modifier.height(0.dp))
 
         Text(
-            text = "How Are You Today ?",
+            text = t("How Are You Today ?"),
             style = AppTypography.poppinsSemiBold().copy(
                 fontSize = 24.sp
             ),

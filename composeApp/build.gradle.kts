@@ -52,6 +52,9 @@ kotlin {
             implementation("io.coil-kt:coil-compose:2.4.0")
 
             implementation("com.google.android.gms:play-services-location:21.0.1")
+
+            implementation("com.google.mlkit:translate:17.0.2")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

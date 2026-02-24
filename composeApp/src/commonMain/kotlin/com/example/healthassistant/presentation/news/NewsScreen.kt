@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 
@@ -70,7 +71,7 @@ fun NewsTopBar() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Health News",
+                text = t("Health News"),
                 style = AppTypography.poppinsSemiBold().copy(
                     fontSize = 24.sp
                 ),

@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.statusBarsPadding
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.PossibleCause
 import com.example.healthassistant.presentation.history.Bullet
 import com.example.healthassistant.presentation.history.SectionTitle
@@ -45,7 +46,7 @@ fun AssessmentCauseDetailScreen(
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = cause.title,
+                text = t(cause.title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -65,7 +66,7 @@ fun AssessmentCauseDetailScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ───── About This ─────
-            SectionTitle("About this")
+            SectionTitle(t("About this"))
 
             cause.detail.aboutThis.forEach {
                 Bullet(it)
@@ -74,17 +75,17 @@ fun AssessmentCauseDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // ───── How Common ─────
-            SectionTitle("How common this is?")
+            SectionTitle(t("How common this is?"))
 
             Text(
-                text = cause.detail.commonDescription,
+                text = t(cause.detail.commonDescription),
                 style = MaterialTheme.typography.bodyMedium
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // ───── What You Can Do ─────
-            SectionTitle("What you can do")
+            SectionTitle(t("What you can do"))
 
             cause.detail.whatYouCanDoNow.forEach {
                 Bullet(it)
@@ -106,7 +107,7 @@ fun AssessmentCauseDetailScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = it,
+                        text = t(it),
                         color = Color.Red,
                         style = MaterialTheme.typography.bodyMedium
                     )

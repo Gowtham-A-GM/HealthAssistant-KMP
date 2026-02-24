@@ -1,10 +1,19 @@
 package com.example.healthassistant.presentation.home
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.utils.LanguageState
+import com.example.healthassistant.core.utils.platformInitTranslator
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.presentation.home.components.CareTipBottomSheet
 import com.example.healthassistant.presentation.home.components.EmergencyBottomSheetWrapper
 
@@ -21,6 +30,8 @@ fun HomeScreen(
 
     var pendingEmergencyAction by remember { mutableStateOf<EmergencyAction?>(null) }
 
+    var showLanguageDialog by remember { mutableStateOf(false) }
+
 
     HomeContent(
         state = state,
@@ -35,6 +46,10 @@ fun HomeScreen(
                             viewModel.onEvent(event)
                         }
                     }
+                }
+
+                HomeEvent.SettingsClicked -> {
+                    showLanguageDialog = true   // 👈 OPEN LANGUAGE DIALOG
                 }
 
                 else -> viewModel.onEvent(event)
@@ -65,12 +80,12 @@ fun HomeScreen(
     if (activeSheet == HomeSheetType.Reminder) {
 
         CareTipBottomSheet(
-            tipTitle = "Today's Care Tip",
-            tipMessage = "Take a short walk today to refresh your body and mind.",
+            tipTitle = t("Today's Care Tip"),
+            tipMessage = t("Take a short walk today to refresh your body and mind."),
             reasons = listOf(
-                "Improves blood circulation and boosts energy.",
-                "Reduces stress and clears your mind.",
-                "Helps keep your body active."
+                t("Improves blood circulation and boosts energy."),
+                t("Reduces stress and clears your mind."),
+                t("Helps keep your body active.")
             ),
             onSkip = {
                 activeSheet = null
@@ -98,7 +113,7 @@ fun HomeScreen(
                         }
                     }
                 ) {
-                    Text("YES")
+                    Text(t("YES"))
                 }
             },
             dismissButton = {
@@ -109,15 +124,67 @@ fun HomeScreen(
                         AppLogger.d("EMERGENCY", "User cancelled confirmation. Reopening sheet.")
                     }
                 ) {
-                    Text("NO")
+                    Text(t("NO"))
                 }
             },
             title = {
-                Text("Confirm Action")
+                Text(t("Confirm Action"))
             },
             text = {
-                Text("Are you sure you want to proceed?")
+                Text(t("Are you sure you want to proceed?"))
             }
+        )
+    }
+
+    if (showLanguageDialog) {
+
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+
+            title = { Text(t("Select Language")) },
+
+            text = {
+                Column {
+
+                    Text(
+                        text = t("English"),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                LanguageState.currentLanguage.value = "en"
+                                platformInitTranslator("en")
+                                showLanguageDialog = false
+                            }
+                            .padding(12.dp)
+                    )
+
+                    Text(
+                        text = t("Tamil"),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                LanguageState.currentLanguage.value = "ta"
+                                platformInitTranslator("ta")
+                                showLanguageDialog = false
+                            }
+                            .padding(12.dp)
+                    )
+
+                    Text(
+                        text = t("Hindi"),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                LanguageState.currentLanguage.value = "hi"
+                                platformInitTranslator("hi")
+                                showLanguageDialog = false
+                            }
+                            .padding(12.dp)
+                    )
+                }
+            },
+
+            confirmButton = {}
         )
     }
 

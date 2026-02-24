@@ -59,7 +59,7 @@ fun App(
         val api = remember {
             AssessmentApiImpl(
                 client = NetworkClient.httpClient,
-                baseUrl = "https://f9ae-223-237-184-184.ngrok-free.app"
+                baseUrl = "http://13.63.63.157:8000"
             )
         }
 
@@ -88,7 +88,7 @@ fun App(
         val chatApi = remember {
             ChatApiImpl(
                 client = NetworkClient.httpClient,
-                baseUrl = "https://f9ae-223-237-184-184.ngrok-free.app"
+                baseUrl = "http://13.63.63.157:8000"
             )
         }
 
@@ -107,7 +107,9 @@ fun App(
 
         val chatViewModel = remember {
             ChatViewModel(
-                repository = chatRepository
+                repository = chatRepository,
+                speechToTextManager = speechToTextManager,
+                ttsManager = ttsManager
             )
         }
 
@@ -282,7 +284,10 @@ fun App(
                 }
             }
 
-            if (currentScreen != AppScreen.Assessment) {
+            if (
+                currentScreen != AppScreen.Assessment &&
+                currentScreen !is AppScreen.Chat
+            ) {
                 BottomNavBar(
                     selected = currentScreen,
                     onHomeClick = { currentScreen = AppScreen.Home },

@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
 import com.example.healthassistant.designsystem.AppTypography
@@ -83,7 +84,7 @@ fun CareTipBottomActions(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Skip for Today",
+                text = t("Skip for Today"),
                 style = AppTypography.poppinsSemiBold().copy(fontSize = 14.sp),
                 color = AppColors.dustyGray
             )
@@ -117,7 +118,7 @@ fun CareTipBottomActions(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Mark as Done",
+                text = t("Mark as Done"),
                 style = AppTypography.poppinsSemiBold().copy(fontSize = 14.sp),
                 color = AppColors.blue
             )

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
 import healthassistant.composeapp.generated.resources.Res
@@ -34,7 +35,7 @@ fun HomeTopBar(
         // 👤 Avatar
         Image(
             painter = painterResource(Res.drawable.img_user_avatar),
-            contentDescription = "User Avatar",
+            contentDescription = t("User Avatar"),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(44.dp)
@@ -58,7 +59,7 @@ fun HomeTopBar(
         ) {
             Image(
                 painter = painterResource(Res.drawable.ic_settings), // replace with your asset
-                contentDescription = "Settings",
+                contentDescription = t("Settings"),
                 modifier = Modifier.size(20.dp)
             )
         }

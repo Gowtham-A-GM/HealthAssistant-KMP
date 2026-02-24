@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
 import com.example.healthassistant.designsystem.AppTypography
@@ -66,7 +67,7 @@ fun HomeContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Remy Chat",
+            text = t("Remy Chat"),
             style = AppTypography.poppinsSemiBold().copy(
                 fontSize = 18.sp
             ),
@@ -84,7 +85,7 @@ fun HomeContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "You Can Ask Like This",
+            text = t("You Can Ask Like This"),
             style = AppTypography.poppinsMedium().copy(
                 fontSize = 12.sp
             ),
@@ -102,7 +103,7 @@ fun HomeContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Quick Help",
+            text = t("Quick Help"),
             style = AppTypography.poppinsSemiBold().copy(
                 fontSize = 18.sp
             ),

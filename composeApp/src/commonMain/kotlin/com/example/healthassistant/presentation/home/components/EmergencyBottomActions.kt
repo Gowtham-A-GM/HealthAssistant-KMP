@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.presentation.home.EmergencyAction
@@ -48,10 +49,10 @@ fun EmergencyBottomActions(
     val isEnabled = ambulanceSelected || familySelected
 
     val actionText = when {
-        ambulanceSelected && familySelected -> "Proceed"
-        ambulanceSelected -> "Call 108"
-        familySelected -> "Alert"
-        else -> "Select Service"
+        ambulanceSelected && familySelected -> t("Proceed")
+        ambulanceSelected -> t("Call 108")
+        familySelected -> t("Alert")
+        else -> t("Select Service")
     }
 
     Row(
@@ -88,7 +89,7 @@ fun EmergencyBottomActions(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Cancel",
+                text = t("Cancel"),
                 style = AppTypography.poppinsSemiBold().copy(fontSize = 14.sp),
                 color = AppColors.dustyGray
             )

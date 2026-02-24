@@ -7,4 +7,7 @@ sealed class ChatEvent {
     object SendMessage : ChatEvent()
 
     object Retry : ChatEvent()
+
+    object ToggleMic : ChatEvent()
+    object ToggleTts : ChatEvent()
 }

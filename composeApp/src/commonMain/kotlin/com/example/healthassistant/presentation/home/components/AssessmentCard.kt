@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import healthassistant.composeapp.generated.resources.Res
 import healthassistant.composeapp.generated.resources.ic_star
 import healthassistant.composeapp.generated.resources.img_doctor
@@ -55,7 +56,7 @@ fun AssessmentCard(
             ) {
                 Image(
                     painter = painterResource(Res.drawable.img_doctor),
-                    contentDescription = "Doctor illustration",
+                    contentDescription = t("Doctor illustration"),
                     modifier = Modifier
                         .fillMaxSize(),
                     contentScale = ContentScale.Fit,
@@ -75,7 +76,7 @@ fun AssessmentCard(
 
                 // SUB-ROW 1: "Not feeling well?" - aligned to center of column 2
                 Text(
-                    text = "Not feeling well?",
+                    text = t("Not feeling well?"),
                     style = AppTypography.poppinsMedium().copy(
                         fontSize = 16.sp
                     ),
@@ -88,7 +89,7 @@ fun AssessmentCard(
 
                 // SUB-ROW 2: "I can help you understand your health" - aligned to center of column 2
                 Text(
-                    text = "I can help you understand your health",
+                    text = t("I can help you understand your health"),
                     style = AppTypography.poppinsMedium().copy(
                         fontSize = 14.sp
                     ),
@@ -123,7 +124,7 @@ fun AssessmentCard(
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = "Start Symptom Assessment",
+                text = t("Start Symptom Assessment"),
                 style = AppTypography.poppinsSemiBold().copy(
                     fontSize = 16.sp
                 ),

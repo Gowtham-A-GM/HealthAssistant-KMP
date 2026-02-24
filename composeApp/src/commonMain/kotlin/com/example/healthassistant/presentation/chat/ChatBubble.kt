@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.healthassistant.domain.model.chat.ChatMessage
 import com.example.healthassistant.domain.model.chat.Role
 import com.example.healthassistant.core.utils.RelativeTimeFormatter
+import com.example.healthassistant.core.utils.t
 
 @Composable
 fun ChatBubble(message: ChatMessage) {
@@ -40,7 +41,7 @@ fun ChatBubble(message: ChatMessage) {
         ) {
 
             Text(
-                text = message.content,
+                text = t(message.content),
                 color = if (isUser)
                     Color.White
                 else
@@ -51,7 +52,7 @@ fun ChatBubble(message: ChatMessage) {
         Spacer(modifier = Modifier.height(2.dp))
 
         Text(
-            text = RelativeTimeFormatter.format(message.timestamp),
+            text = t(RelativeTimeFormatter.format(message.timestamp)),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary
         )

@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.domain.model.assessment.ResponseOption
@@ -73,7 +74,7 @@ fun GradientOptionButton(
     ) {
 
         Text(
-            text = text,
+            text = t(text),
             style = AppTypography.poppinsSemiBold().copy(
                 fontSize = 14.sp
             ),

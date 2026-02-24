@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.sp
+import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
 import com.example.healthassistant.designsystem.AppTypography
@@ -67,7 +68,7 @@ fun QuickHelpCard(
         ) {
 
             Text(
-                text = item.title,
+                text = t(item.title),
                 style = AppTypography.poppinsRegular().copy(
                     fontSize = 14.sp
                 ),
@@ -77,7 +78,7 @@ fun QuickHelpCard(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = item.description,
+                text = t(item.description),
                 style = AppTypography.poppinsMedium().copy(
                     fontSize = 10.sp
                 ),

@@ -35,10 +35,18 @@ class NewsRepositoryImpl(
 
         AppLogger.d("NEWS_REPO", "Fetching strict health news")
 
-        val page1 = api.fetchHealthNews(page = 1).articles
-        val page2 = api.fetchHealthNews(page = 2).articles
+        val response1 = api.fetchHealthNews(page = 1)
+        val response2 = api.fetchHealthNews(page = 2)
 
-        val combined = (page1 + page2)
+        if (response1.status == "error") {
+            AppLogger.d("NEWS_REPO", "API ERROR: ${response1.message}")
+            return emptyList()
+        }
+
+        val page1 = response1.articles ?: emptyList()
+        val page2 = response2.articles ?: emptyList()
+
+        val combined = page1 + page2
 
         AppLogger.d("NEWS_REPO", "Fetched ${combined.size} raw articles")
 
