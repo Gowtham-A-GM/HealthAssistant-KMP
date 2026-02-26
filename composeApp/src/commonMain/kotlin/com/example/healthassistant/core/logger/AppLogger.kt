@@ -10,16 +10,43 @@ object AppLogger {
         ignoreUnknownKeys = true
     }
 
+    private const val LINE =
+        "════════════════════════════════════════════════════"
+
     fun d(tag: String, message: String) {
-        println("[$tag] $message")
+        println("\n$LINE")
+        println("🔹 [$tag]")
+        println("➜ $message")
     }
 
-    fun logJson(tag: String, label: String, obj: Any) {
+    fun section(tag: String, title: String) {
+        println("\n$LINE")
+        println("🚀 [$tag] $title")
+    }
+
+    fun logJson(tag: String, label: String, obj: Any?) {
+        println("📦 [$tag] $label")
+
         try {
-            val json = prettyJson.encodeToString(obj)
-            println("[$tag] $label →\n$json")
+            if (obj == null) {
+                println("null")
+            } else {
+                println(prettyJson.encodeToString(obj))
+            }
         } catch (e: Exception) {
-            println("[$tag] Failed to log JSON → ${e.message}")
+            println(obj.toString()) // fallback to toString()
         }
+
+    }
+
+    fun error(tag: String, message: String) {
+        println("❌ [$tag] ERROR")
+        println("➜ $message")
+    }
+
+    fun state(tag: String, label: String, state: Any) {
+        println("\n$LINE")
+        println("🧠 [$tag] STATE → $label")
+        println(state.toString())
     }
 }

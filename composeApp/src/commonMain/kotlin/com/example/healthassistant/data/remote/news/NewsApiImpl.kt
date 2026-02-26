@@ -12,11 +12,9 @@ class NewsApiImpl(
     private val apiKey: String
 ) : NewsApi {
 
-    override suspend fun fetchHealthNews(page: Int): NewsResponseDto {
+    override suspend fun fetchHealthNews(): NewsResponseDto {
 
         AppLogger.d("NEWS_API", "Calling STRICT Health NewsAPI")
-
-        AppLogger.d("NEWS_API", "Calling STRICT Health NewsAPI - page $page")
 
         val response = client.get("https://newsapi.org/v2/everything") {
 
@@ -38,7 +36,7 @@ class NewsApiImpl(
 
             parameter("pageSize", 50)
 
-            parameter("page", page)
+            parameter("page", 1)
 
             parameter("apiKey", apiKey)
         }
@@ -48,7 +46,10 @@ class NewsApiImpl(
             AppLogger.d("NEWS_API", "ERROR: ${response.message}")
         }
 
-        AppLogger.d("NEWS_API", "Page $page -> ${response.articles?.size} articles")
+        AppLogger.d(
+            "NEWS_API",
+            "Page 1 -> ${response.articles?.size ?: 0} articles"
+        )
 
         return response
     }

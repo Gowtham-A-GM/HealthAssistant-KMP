@@ -4,6 +4,13 @@ import com.example.healthassistant.domain.model.assessment.PossibleCause
 
 
 sealed class AppScreen {
+
+    object Login : AppScreen()
+    object Signup : AppScreen()
+
+    object OnboardingProfile : AppScreen()
+    object OnboardingMedical : AppScreen()
+
     object Home : AppScreen()
     object Assessment : AppScreen()
 

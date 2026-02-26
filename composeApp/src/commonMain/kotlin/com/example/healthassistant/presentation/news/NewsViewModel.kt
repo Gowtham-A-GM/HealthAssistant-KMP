@@ -16,11 +16,7 @@ class NewsViewModel(
     private val _state = MutableStateFlow(NewsState())
     val state: StateFlow<NewsState> = _state
 
-    init {
-        loadNews()
-    }
-
-    private fun loadNews() {
+    fun loadNews() {
         CoroutineScope(Dispatchers.Default).launch {
 
             AppLogger.d("NEWS_VM", "Starting news load")

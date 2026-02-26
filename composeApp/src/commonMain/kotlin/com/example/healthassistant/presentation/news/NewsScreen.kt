@@ -20,6 +20,12 @@ fun NewsScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    LaunchedEffect(state.articles.isEmpty()) {
+        if (state.articles.isEmpty()) {
+            viewModel.loadNews()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -3,9 +3,13 @@ package com.example.healthassistant
 import NewsApiImpl
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.network.AppConfig
 import com.example.healthassistant.designsystem.HealthAssistantTheme
 import com.example.healthassistant.presentation.navigation.AppScreen
 import com.example.healthassistant.presentation.navigation.BottomNavBar
@@ -25,16 +29,26 @@ import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSour
 import com.example.healthassistant.data.local.chat.ChatLocalDataSourceImpl
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSourceImpl
 import com.example.healthassistant.data.local.report.ReportLocalDataSourceImpl
+import com.example.healthassistant.data.remote.auth.AuthApiImpl
 import com.example.healthassistant.data.remote.chat.ChatApiImpl
+import com.example.healthassistant.data.remote.profile.ProfileApiImpl
+import com.example.healthassistant.data.repository.AuthRepositoryImpl
 import com.example.healthassistant.data.repository.ChatRepositoryImpl
 import com.example.healthassistant.data.repository.NewsRepositoryImpl
+import com.example.healthassistant.data.repository.ProfileRepositoryImpl
 import com.example.healthassistant.db.HealthDatabase
 import com.example.healthassistant.presentation.assessment.AssessmentCauseDetailScreen
 import com.example.healthassistant.presentation.assessment.AssessmentReportScreen
+import com.example.healthassistant.presentation.auth.AuthViewModel
+import com.example.healthassistant.presentation.auth.LoginScreen
+import com.example.healthassistant.presentation.auth.OnboardingMedicalScreen
+import com.example.healthassistant.presentation.auth.OnboardingMedicalViewModel
+import com.example.healthassistant.presentation.auth.OnboardingProfileScreen
+import com.example.healthassistant.presentation.auth.OnboardingProfileViewModel
+import com.example.healthassistant.presentation.auth.SignupScreen
 import com.example.healthassistant.presentation.chat.ChatScreen
 import com.example.healthassistant.presentation.chat.ChatViewModel
 import com.example.healthassistant.presentation.home.EmergencyAction
-//import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSourceImpl
 import com.example.healthassistant.presentation.home.HomeScreen
 import com.example.healthassistant.presentation.home.HomeViewModel
 import com.example.healthassistant.presentation.news.NewsViewModel
@@ -50,16 +64,13 @@ fun App(
 
     HealthAssistantTheme {
 
-        var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
-
-
-
+        var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Login) }
 
         // ✅ API
         val api = remember {
             AssessmentApiImpl(
                 client = NetworkClient.httpClient,
-                baseUrl = "http://13.63.63.157:8000"
+                baseUrl = AppConfig.BASE_URL
             )
         }
 
@@ -88,7 +99,7 @@ fun App(
         val chatApi = remember {
             ChatApiImpl(
                 client = NetworkClient.httpClient,
-                baseUrl = "http://13.63.63.157:8000"
+                baseUrl = AppConfig.BASE_URL
             )
         }
 
@@ -113,10 +124,46 @@ fun App(
             )
         }
 
+        val authApi = remember {
+            AuthApiImpl(
+                client = NetworkClient.httpClient,
+                baseUrl = AppConfig.BASE_URL
+            )
+        }
 
+        val authRepository = remember {
+            AuthRepositoryImpl(authApi)
+        }
 
+        val authViewModel = remember {
+            AuthViewModel(authRepository)
+        }
 
+        val profileApi = remember {
+            ProfileApiImpl(
+                client = NetworkClient.httpClient,
+                baseUrl = AppConfig.BASE_URL
+            )
+        }
 
+        val profileRepository = remember {
+            ProfileRepositoryImpl(profileApi)
+        }
+
+        val token = authViewModel.state.value.token ?: ""
+        val onboardingProfileViewModel = remember(token) {
+            OnboardingProfileViewModel(
+                repository = profileRepository,
+                token = token
+            )
+        }
+
+        val onboardingMedicalViewModel = remember(token) {
+            OnboardingMedicalViewModel(
+                repository = profileRepository,
+                token = token
+            )
+        }
 
         // ✅ ViewModel
         val assessmentViewModel = remember {
@@ -147,6 +194,11 @@ fun App(
         PlatformBackHandler {
 
             currentScreen = when (currentScreen) {
+                AppScreen.OnboardingProfile ->
+                    AppScreen.Signup
+
+                AppScreen.OnboardingMedical ->
+                    AppScreen.OnboardingProfile
 
                 is AppScreen.Chat -> AppScreen.Home
 
@@ -186,6 +238,46 @@ fun App(
         Column {
             Box(modifier = Modifier.weight(1f)) {
                 when (currentScreen) {
+
+                    AppScreen.Login -> LoginScreen(
+                        viewModel = authViewModel,
+                        onNavigateToSignup = {
+                            currentScreen = AppScreen.Signup
+                            AppLogger.d("NAVIGATION", "Navigated to Signup")
+                        },
+                        onLoginSuccess = {
+                            currentScreen = AppScreen.Home
+                            AppLogger.d("NAVIGATION", "Login Success → Home")
+                        }
+                    )
+                    AppScreen.OnboardingProfile -> OnboardingProfileScreen(
+                        viewModel = onboardingProfileViewModel,
+                        onProfileCompleted = {
+                            currentScreen = AppScreen.OnboardingMedical
+                            AppLogger.d("NAVIGATION", "Profile Saved → MedicalData")
+                        }
+                    )
+
+                    AppScreen.OnboardingMedical -> OnboardingMedicalScreen(
+                        viewModel = onboardingMedicalViewModel,
+                        onMedicalCompleted = {
+                            currentScreen = AppScreen.Home
+                        }
+                    )
+
+                    AppScreen.Signup -> SignupScreen(
+                        viewModel = authViewModel,
+                        onNavigateToLogin = {
+                            currentScreen = AppScreen.Login
+                            AppLogger.d("NAVIGATION", "User Logged Out → Login Screen")
+                        },
+                        onSignupSuccess = {
+                            currentScreen = AppScreen.OnboardingProfile
+                            AppLogger.d("NAVIGATION", "Signup Success → OnboardingProfile")
+                        }
+                    )
+
+
 
                     AppScreen.Home -> HomeScreen(
                         viewModel = HomeViewModel(
@@ -258,7 +350,6 @@ fun App(
 
 
 
-
                     AppScreen.History -> HistoryScreen(
                         onItemClick = {
                             currentScreen = AppScreen.HistoryDetail
@@ -286,7 +377,11 @@ fun App(
 
             if (
                 currentScreen != AppScreen.Assessment &&
-                currentScreen !is AppScreen.Chat
+                currentScreen !is AppScreen.Chat &&
+                currentScreen != AppScreen.Login &&
+                currentScreen != AppScreen.Signup &&
+                currentScreen != AppScreen.OnboardingProfile &&
+                currentScreen != AppScreen.OnboardingMedical
             ) {
                 BottomNavBar(
                     selected = currentScreen,

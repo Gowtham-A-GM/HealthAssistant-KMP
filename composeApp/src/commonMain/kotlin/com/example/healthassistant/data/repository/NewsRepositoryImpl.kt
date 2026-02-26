@@ -10,48 +10,31 @@ class NewsRepositoryImpl(
     private val api: NewsApi
 ) : NewsRepository {
 
-//    override suspend fun getHealthNews(): List<NewsArticle> {
-//
-//        AppLogger.d("NEWS_REPO", "Fetching news from API")
-//
-//        val articles = api.fetchHealthNews().articles.map {
-//
-//            NewsArticle(
-//                title = it.title ?: "",
-//                description = it.description ?: "No description available",
-//                imageUrl = it.urlToImage,
-//                publishedTime = RelativeTimeFormatter.format(it.publishedAt),
-//                sourceName = it.source?.name ?: "Unknown"
-//            )
-//        }
-//
-//
-//        AppLogger.d("NEWS_REPO", "Mapped ${articles.size} articles")
-//
-//        return articles
-//    }
+    private var cachedArticles: List<NewsArticle>? = null
 
     override suspend fun getHealthNews(): List<NewsArticle> {
 
-        AppLogger.d("NEWS_REPO", "Fetching strict health news")
+        // 🔹 Return cached data if already loaded
+        cachedArticles?.let {
+            AppLogger.d("NEWS_REPO", "Returning cached news")
+            return it
+        }
 
-        val response1 = api.fetchHealthNews(page = 1)
-        val response2 = api.fetchHealthNews(page = 2)
+        AppLogger.d("NEWS_REPO", "Fetching strict health news (page 1 only)")
 
-        if (response1.status == "error") {
-            AppLogger.d("NEWS_REPO", "API ERROR: ${response1.message}")
+        val response = api.fetchHealthNews()
+
+        if (response.status == "error") {
+            AppLogger.d("NEWS_REPO", "API ERROR: ${response.message}")
             return emptyList()
         }
 
-        val page1 = response1.articles ?: emptyList()
-        val page2 = response2.articles ?: emptyList()
+        val rawArticles = response.articles ?: emptyList()
 
-        val combined = page1 + page2
-
-        AppLogger.d("NEWS_REPO", "Fetched ${combined.size} raw articles")
+        AppLogger.d("NEWS_REPO", "Fetched ${rawArticles.size} raw articles")
 
         // 🔹 Remove duplicate titles
-        val unique = combined.distinctBy { it.title }
+        val unique = rawArticles.distinctBy { it.title }
 
         // 🔹 Strict health filtering
         val filtered = unique.filter { article ->
@@ -93,7 +76,7 @@ class NewsRepositoryImpl(
 
         AppLogger.d("NEWS_REPO", "After strict filtering: ${filtered.size} articles")
 
-        return filtered.map {
+        val resultList = filtered.map {
             NewsArticle(
                 title = it.title ?: "",
                 description = it.description ?: "No description available",
@@ -102,6 +85,11 @@ class NewsRepositoryImpl(
                 sourceName = it.source?.name ?: "Unknown"
             )
         }
+
+        // 🔹 Save to cache
+        cachedArticles = resultList
+
+        return resultList
     }
 
 
