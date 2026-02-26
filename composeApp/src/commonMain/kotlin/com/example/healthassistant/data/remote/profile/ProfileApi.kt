@@ -6,12 +6,10 @@ import com.example.healthassistant.data.remote.profile.dto.ProfileResponseDto
 interface ProfileApi {
 
     suspend fun submitOnboardingProfile(
-        token: String,
         request: ProfileAnswerRequestDto
     ): ProfileResponseDto
 
     suspend fun submitMedicalOnboarding(
-        token: String,
         request: ProfileAnswerRequestDto
     ): ProfileResponseDto
 }

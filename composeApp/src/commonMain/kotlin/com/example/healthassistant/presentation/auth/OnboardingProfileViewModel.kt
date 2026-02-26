@@ -12,8 +12,7 @@ import com.example.healthassistant.presentation.auth.questions.ProfileQuestionCo
 import kotlinx.coroutines.launch
 
 class OnboardingProfileViewModel(
-    private val repository: ProfileRepository,
-    private val token: String
+    private val repository: ProfileRepository
 ) : ViewModel() {
 
     var state = mutableStateOf(OnboardingProfileState())
@@ -31,7 +30,6 @@ class OnboardingProfileViewModel(
 
     fun submitProfile() {
 
-        AppLogger.d("PROFILE_VM", "Token used: $token")
 
         // 🔹 VALIDATION (only required ones)
         val requiredQuestions = listOf("q_name", "q_age", "q_gender")
@@ -56,7 +54,7 @@ class OnboardingProfileViewModel(
 
                 val request = buildRequest()
 
-                val response = repository.submitProfile(token, request)
+                val response = repository.submitProfile(request)
 
                 if (response.success) {
                     state.value = state.value.copy(isSuccess = true)

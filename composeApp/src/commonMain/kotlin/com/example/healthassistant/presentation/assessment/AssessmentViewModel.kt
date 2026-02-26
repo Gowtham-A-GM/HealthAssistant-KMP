@@ -321,32 +321,27 @@ class AssessmentViewModel(
 
     private suspend fun handleIncomingQuestion(question: Question) {
 
-        // If optional → check stored profile answer
-        if (!question.isCompulsory) {
+        val stored = repository.getStoredAnswer(question.id)
 
-            val stored = repository.getProfileAnswer(question.id)
+        if (stored != null) {
 
-            if (stored != null) {
+            AppLogger.d("VM", "AUTO ANSWERING FROM SERVER → ${question.id}")
 
-                AppLogger.d("VM", "AUTO ANSWERING → ${question.id}")
+            val session = repository.submitAnswer(
+                question = question,
+                answer = stored
+            )
 
-                val session = repository.submitAnswer(
-                    question = question,
-                    answer = stored
-                )
-
-                if (session == null) {
-                    generateReport()
-                    return
-                }
-
-                // Recursively check next question
-                handleIncomingQuestion(session.question)
+            if (session == null) {
+                generateReport()
                 return
             }
+
+            handleIncomingQuestion(session.question)
+            return
         }
 
-        // Otherwise show UI normally
+        // Show UI normally
         _state.value = _state.value.copy(
             isLoading = false,
             currentQuestion = question,

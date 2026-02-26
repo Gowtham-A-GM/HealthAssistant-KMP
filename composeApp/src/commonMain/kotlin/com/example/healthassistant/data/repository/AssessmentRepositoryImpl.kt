@@ -35,6 +35,7 @@ class AssessmentRepositoryImpl(
 
  : AssessmentRepository {
 
+    private var storedAnswersMap: Map<String, AnswerDto> = emptyMap()
 
     private var currentSessionId: String = ""
 
@@ -45,21 +46,16 @@ class AssessmentRepositoryImpl(
 
         val dto = api.startAssessment()
 
-        AppLogger.d(
-            "REPO",
-            "API Response → session_id=${dto.session_id}, question_id=${dto.question.question_id}"
-        )
-
         currentSessionId = dto.session_id
 
-        val domain = dto.toDomain()
+        // 🔥 STORE STORED ANSWERS IN MEMORY
+        storedAnswersMap = dto.stored_answers.associate {
+            it.question_id to it.answer_json
+        }
 
-        AppLogger.d(
-            "REPO",
-            "Mapped to Domain → question=${domain.question.text}"
-        )
+        AppLogger.d("REPO", "Stored Answers Loaded → ${storedAnswersMap.size}")
 
-        return domain
+        return dto.toDomain()
     }
 
     override suspend fun submitAnswer(
@@ -86,11 +82,6 @@ class AssessmentRepositoryImpl(
         // Always store locally
         // Always store for current session
         sessionLocal.insertContext(question, answer)
-
-        // Store permanently ONLY if optional
-        if (!question.isCompulsory) {
-            profileLocal.insertOrUpdate(question, answer)
-        }
 
 
         return if (response.status == "completed") {
@@ -162,6 +153,9 @@ class AssessmentRepositoryImpl(
 
 
     }
+    override suspend fun getStoredAnswer(questionId: String): AnswerDto? {
+        return storedAnswersMap[questionId]
+    }
 
     override suspend fun getAllReports(): List<Report> {
         return reportLocal.getAll()
@@ -181,6 +175,7 @@ class AssessmentRepositoryImpl(
             AppLogger.d("REPO", "ENDING SESSION → $currentSessionId")
             api.endSession(currentSessionId)
             currentSessionId = ""
+            storedAnswersMap = emptyMap()
         }
     }
 

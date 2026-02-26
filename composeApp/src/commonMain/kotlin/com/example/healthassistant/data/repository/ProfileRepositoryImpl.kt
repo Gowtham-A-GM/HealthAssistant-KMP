@@ -15,16 +15,14 @@ class ProfileRepositoryImpl(
 ) : ProfileRepository {
 
     override suspend fun submitProfile(
-        token: String,
         request: ProfileAnswerRequestDto
     ): ProfileResponseDto {
-        return api.submitOnboardingProfile(token, request)
+        return api.submitOnboardingProfile(request)
     }
 
     override suspend fun submitMedical(
-        token: String,
         request: ProfileAnswerRequestDto
     ): ProfileResponseDto {
-        return api.submitMedicalOnboarding(token, request)
+        return api.submitMedicalOnboarding(request)
     }
 }

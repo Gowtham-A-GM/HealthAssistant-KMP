@@ -15,13 +15,10 @@ class ProfileApiImpl(
 ) : ProfileApi {
 
     override suspend fun submitOnboardingProfile(
-        token: String,
         request: ProfileAnswerRequestDto
     ): ProfileResponseDto {
 
         val response = client.post("$baseUrl/user/profile/onboarding") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $token")
             setBody(request)
         }
 
@@ -29,13 +26,10 @@ class ProfileApiImpl(
     }
 
     override suspend fun submitMedicalOnboarding(
-        token: String,
         request: ProfileAnswerRequestDto
     ): ProfileResponseDto {
 
         val response = client.post("$baseUrl/user/medical/onboarding") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $token")
             setBody(request)
         }
 

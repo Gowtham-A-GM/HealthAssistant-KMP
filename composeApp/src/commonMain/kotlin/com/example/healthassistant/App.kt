@@ -151,17 +151,15 @@ fun App(
         }
 
         val token = authViewModel.state.value.token ?: ""
-        val onboardingProfileViewModel = remember(token) {
+        val onboardingProfileViewModel = remember {
             OnboardingProfileViewModel(
-                repository = profileRepository,
-                token = token
+                repository = profileRepository
             )
         }
 
         val onboardingMedicalViewModel = remember(token) {
             OnboardingMedicalViewModel(
-                repository = profileRepository,
-                token = token
+                repository = profileRepository
             )
         }
 

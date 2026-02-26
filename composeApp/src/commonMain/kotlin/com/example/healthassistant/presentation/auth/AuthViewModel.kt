@@ -3,6 +3,7 @@ package com.example.healthassistant.presentation.auth
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.healthassistant.core.auth.TokenManager
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.domain.repository.AuthRepository
 import kotlinx.coroutines.launch
@@ -74,15 +75,15 @@ class AuthViewModel(
 
                 if (loginResponse.success && loginResponse.token != null) {
 
+                    TokenManager.saveToken(loginResponse.token)
+
                     AppLogger.d("AUTH_VM", "Auto Login Successful")
                     AppLogger.d("AUTH_VM", "Generated JWT Token → ${loginResponse.token}")
 
-                    // 3️⃣ STORE TOKEN
                     state.value = state.value.copy(
                         token = loginResponse.token,
                         isSuccess = true
                     )
-
                 } else {
                     state.value = state.value.copy(
                         errorMessage = loginResponse.message
@@ -116,6 +117,9 @@ class AuthViewModel(
                 )
 
                 if (response.success && response.token != null) {
+
+                    TokenManager.saveToken(response.token)
+
                     state.value = state.value.copy(
                         token = response.token,
                         isSuccess = true

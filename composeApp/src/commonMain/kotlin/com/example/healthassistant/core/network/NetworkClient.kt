@@ -1,23 +1,24 @@
 package com.example.healthassistant.core.network
 
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import com.example.healthassistant.core.auth.TokenManager
+import io.ktor.client.*
+import io.ktor.client.plugins.DefaultRequest
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-
 
 object NetworkClient {
 
     val httpClient = HttpClient {
 
-        // 🔍 NETWORK LOGGING
         install(Logging) {
             logger = Logger.DEFAULT
             level = LogLevel.ALL
         }
 
-        // 🔥 JSON CONFIG
         install(ContentNegotiation) {
             json(
                 Json {
@@ -26,6 +27,18 @@ object NetworkClient {
                     prettyPrint = true
                 }
             )
+        }
+
+        // 🔥 GLOBAL JWT INJECTION
+        install(DefaultRequest) {
+
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+
+            val token = TokenManager.getToken()
+
+            if (!token.isNullOrBlank()) {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
         }
     }
 }

@@ -12,8 +12,7 @@ import kotlinx.coroutines.launch
 
 
 class OnboardingMedicalViewModel(
-    private val repository: ProfileRepository,
-    private val token: String
+    private val repository: ProfileRepository
 ) : ViewModel() {
 
     var state = mutableStateOf(OnboardingMedicalState())
@@ -29,7 +28,7 @@ class OnboardingMedicalViewModel(
 
                 val request = buildRequest()
 
-                val response = repository.submitMedical(token, request)
+                val response = repository.submitMedical(request)
 
                 if (response.success) {
                     state.value = state.value.copy(isSuccess = true)
