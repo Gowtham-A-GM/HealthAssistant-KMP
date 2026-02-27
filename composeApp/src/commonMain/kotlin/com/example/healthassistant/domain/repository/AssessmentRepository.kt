@@ -4,8 +4,6 @@ import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
 import com.example.healthassistant.domain.model.assessment.AssessmentSession
 import com.example.healthassistant.domain.model.assessment.Question
 import com.example.healthassistant.domain.model.assessment.Report
-import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
-import com.example.healthassistant.presentation.assessment.model.AssessmentUiModel
 
 interface AssessmentRepository {
 
@@ -26,6 +24,8 @@ interface AssessmentRepository {
     suspend fun getReportById(id: String): Report?
 
     suspend fun endSession()
+
+    suspend fun syncReports()
 
 
 

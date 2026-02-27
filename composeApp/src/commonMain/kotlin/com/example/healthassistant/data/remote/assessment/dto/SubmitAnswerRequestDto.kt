@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SubmitAnswerRequestDto(
     val session_id: String,
-    val question: QuestionDto,
-    val answer: AnswerDto
+    val question_id: String,
+    val question_text: String,
+    val answer_json: AnswerDto
 )
-

@@ -10,4 +10,6 @@ interface ReportLocalDataSource {
 
     suspend fun getById(id: String): Report?
 
+    suspend fun clearAll()
+
 }

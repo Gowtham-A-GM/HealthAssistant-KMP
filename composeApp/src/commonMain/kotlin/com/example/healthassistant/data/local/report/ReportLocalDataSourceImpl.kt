@@ -40,4 +40,8 @@ class ReportLocalDataSourceImpl(
             Json.decodeFromString<Report>(it.report_json)
         }
     }
+
+    override suspend fun clearAll() {
+        database.reportsQueries.deleteAll()
+    }
 }

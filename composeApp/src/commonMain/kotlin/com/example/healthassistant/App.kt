@@ -25,7 +25,6 @@ import com.example.healthassistant.core.platform.PlatformBackHandler
 
 import com.example.healthassistant.core.stt.SpeechToTextManager
 import com.example.healthassistant.core.tts.TextToSpeechManager
-import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSourceImpl
 import com.example.healthassistant.data.local.chat.ChatLocalDataSourceImpl
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSourceImpl
 import com.example.healthassistant.data.local.report.ReportLocalDataSourceImpl
@@ -52,6 +51,7 @@ import com.example.healthassistant.presentation.home.EmergencyAction
 import com.example.healthassistant.presentation.home.HomeScreen
 import com.example.healthassistant.presentation.home.HomeViewModel
 import com.example.healthassistant.presentation.news.NewsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun App(
@@ -74,9 +74,6 @@ fun App(
             )
         }
 
-        val sessionLocal = remember {
-            AssessmentLocalDataSourceImpl(database)
-        }
 
         val profileLocal = remember {
             ProfileLocalDataSourceImpl(database)
@@ -90,7 +87,6 @@ fun App(
         val repository = remember {
             AssessmentRepositoryImpl(
                 api = api,
-                sessionLocal = sessionLocal,
                 profileLocal = profileLocal,
                 reportLocal = reportLocal
             )
@@ -136,7 +132,10 @@ fun App(
         }
 
         val authViewModel = remember {
-            AuthViewModel(authRepository)
+            AuthViewModel(
+                repository = authRepository,
+                assessmentRepository = repository   // 🔥 inject here
+            )
         }
 
         val profileApi = remember {
@@ -231,7 +230,6 @@ fun App(
 
         // Temporary hardcoded emergency contact (will replace later)
         val emergencyContactNumber = "6374102550"
-
 
         Column {
             Box(modifier = Modifier.weight(1f)) {

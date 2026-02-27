@@ -1,10 +1,7 @@
 package com.example.healthassistant.data.remote.assessment
 
-import com.example.healthassistant.data.remote.assessment.dto.AnswerRequestDto
-import com.example.healthassistant.data.remote.assessment.dto.AssessmentResponseDto
-import com.example.healthassistant.data.remote.assessment.dto.ContextRequestDto
 import com.example.healthassistant.core.logger.AppLogger
-import com.example.healthassistant.data.remote.assessment.dto.ReportResponseDto
+import com.example.healthassistant.data.remote.assessment.dto.ReportDto
 import com.example.healthassistant.data.remote.assessment.dto.StartAssessmentResponseDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRequestDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerResponseDto
@@ -26,12 +23,12 @@ class AssessmentApiImpl(
 
         AppLogger.d("API", "GET /assessment/start")
 
-        val response: StartAssessmentResponseDto =
-            client.get("$baseUrl/assessment/start").body()
+        val response =
+            client.get("$baseUrl/assessment/start").body<StartAssessmentResponseDto>()
 
         AppLogger.d(
             "API",
-            "Response received → session_id=${response.session_id}}"
+            "Response received → session_id=${response.session_id}"
         )
 
         return response
@@ -41,36 +38,45 @@ class AssessmentApiImpl(
         request: SubmitAnswerRequestDto
     ): SubmitAnswerResponseDto {
 
-        val response: SubmitAnswerResponseDto =
+        val response =
             client.post("$baseUrl/assessment/answer") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
-            }.body()
+            }.body<SubmitAnswerResponseDto>()
 
-        AppLogger.d("API", "Response status → ${response.status}")
+        AppLogger.d("API", "Answer status → ${response.status}")
 
         return response
     }
 
-
     override suspend fun submitReport(
         request: SubmitReportRequestDto
-    ): ReportResponseDto {
+    ): ReportDto {
+
+        AppLogger.d("API", "POST /assessment/report → session_id=${request.session_id}")
+
         return client.post("$baseUrl/assessment/report") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
     }
 
-
     override suspend fun endSession(sessionId: String) {
+
+        AppLogger.d("API", "POST /assessment/end → $sessionId")
+
         client.post("$baseUrl/assessment/end") {
             contentType(ContentType.Application.Json)
             setBody(mapOf("session_id" to sessionId))
         }
     }
 
+    override suspend fun getUserReports(): List<ReportDto> {
 
+        AppLogger.d("API", "GET /user/reports")
 
-
+        return client.get("$baseUrl/user/reports") {
+            contentType(ContentType.Application.Json)
+        }.body()
+    }
 }

@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.healthassistant.core.auth.TokenManager
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.domain.repository.AssessmentRepository
 import com.example.healthassistant.domain.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val assessmentRepository: AssessmentRepository   // 🔥 NEW
 ) : ViewModel() {
 
     var state = mutableStateOf(AuthState())
@@ -77,8 +79,11 @@ class AuthViewModel(
 
                     TokenManager.saveToken(loginResponse.token)
 
-                    AppLogger.d("AUTH_VM", "Auto Login Successful")
-                    AppLogger.d("AUTH_VM", "Generated JWT Token → ${loginResponse.token}")
+                    try {
+                        assessmentRepository.syncReports()
+                    } catch (e: Exception) {
+                        AppLogger.d("AUTH_VM", "Report sync failed → ${e.message}")
+                    }
 
                     state.value = state.value.copy(
                         token = loginResponse.token,
@@ -119,6 +124,16 @@ class AuthViewModel(
                 if (response.success && response.token != null) {
 
                     TokenManager.saveToken(response.token)
+
+                    AppLogger.d("AUTH_VM", "Login success → syncing reports")
+
+                    try {
+                        assessmentRepository.syncReports()
+                        AppLogger.d("AUTH_VM", "Reports synced successfully")
+                    } catch (e: Exception) {
+                        AppLogger.d("AUTH_VM", "Report sync failed → ${e.message}")
+                        // Optional: You can still allow login even if sync fails
+                    }
 
                     state.value = state.value.copy(
                         token = response.token,

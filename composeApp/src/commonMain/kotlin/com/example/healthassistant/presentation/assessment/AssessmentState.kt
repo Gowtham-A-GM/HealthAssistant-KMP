@@ -3,7 +3,6 @@ package com.example.healthassistant.presentation.assessment
 import com.example.healthassistant.domain.model.assessment.Question
 import com.example.healthassistant.domain.model.assessment.Report
 import com.example.healthassistant.presentation.assessment.model.AnswerUiModel
-import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
 
 data class AssessmentState(
     val isLoading: Boolean = true,

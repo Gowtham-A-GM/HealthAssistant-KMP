@@ -1,7 +1,6 @@
 package com.example.healthassistant.data.repository
 
 import com.example.healthassistant.core.logger.AppLogger
-import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSource
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSource
 import com.example.healthassistant.data.local.report.ReportLocalDataSource
 //import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSource
@@ -12,23 +11,16 @@ import com.example.healthassistant.data.remote.assessment.dto.AnswerValueDto
 import com.example.healthassistant.data.remote.assessment.dto.ContextRequestDto
 import com.example.healthassistant.data.remote.assessment.dto.QuestionDto
 import com.example.healthassistant.data.remote.assessment.dto.ResponseOptionDto
-import com.example.healthassistant.data.remote.assessment.dto.SimpleResponseDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRequestDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitReportRequestDto
 import com.example.healthassistant.data.remote.assessment.mapper.toDomain
-import com.example.healthassistant.data.remote.assessment.mapper.toUiModel
 import com.example.healthassistant.domain.model.assessment.AssessmentSession
 import com.example.healthassistant.domain.model.assessment.Question
 import com.example.healthassistant.domain.model.assessment.Report
-import com.example.healthassistant.domain.model.assessment.ResponseOption
 import com.example.healthassistant.domain.repository.AssessmentRepository
-import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
-import com.example.healthassistant.presentation.assessment.model.AssessmentUiModel
-import kotlinx.serialization.json.Json
 
 class AssessmentRepositoryImpl(
     private val api: AssessmentApi,
-    private val sessionLocal: AssessmentLocalDataSource,
     private val profileLocal: ProfileLocalDataSource,
     private val reportLocal: ReportLocalDataSource
 )
@@ -65,93 +57,42 @@ class AssessmentRepositoryImpl(
 
         val request = SubmitAnswerRequestDto(
             session_id = currentSessionId,
-            question = QuestionDto(
-                question_id = question.id,
-                text = question.text,
-                response_type = question.responseType,
-                response_options = question.responseOptions?.map {
-                    ResponseOptionDto(it.id, it.label)
-                },
-                is_compulsory = question.isCompulsory
-            ),
-            answer = answer
+            question_id = question.id,
+            question_text = question.text,
+            answer_json = answer
         )
 
         val response = api.submitAnswer(request)
 
-        // Always store locally
-        // Always store for current session
-        sessionLocal.insertContext(question, answer)
-
+        // ❌ REMOVE sessionLocal.insertContext()
+        // Server stores session answers now.
 
         return if (response.status == "completed") {
             null
         } else {
-            // next question case
             AssessmentSession(
                 sessionId = currentSessionId,
-                question = response.question!!.toDomain())
+                question = response.question!!.toDomain()
+            )
         }
-
     }
 
 
     override suspend fun submitFinalReport(): Report {
 
-        val stored = sessionLocal.getAllContext()
-
-
-
-        val responses = stored.map { localItem ->
-
-            val answerDto = Json.decodeFromString<AnswerDto>(
-                localItem.answerJson
-            )
-
-            val readableAnswer = when (answerDto.type) {
-
-                "text", "number" -> {
-                    answerDto.value ?: ""
-                }
-
-                "single_choice" -> {
-                    answerDto.selected_option_label ?: ""
-                }
-
-                "multi_choice" -> {
-                    answerDto.selected_option_labels
-                        ?.joinToString(", ") ?: ""
-                }
-
-                else -> ""
-            }
-
-            SimpleResponseDto(
-                question = localItem.questionText,
-                answer = readableAnswer
-            )
-        }
-
         val request = SubmitReportRequestDto(
-            responses = responses
+            session_id = currentSessionId
         )
 
-        AppLogger.d("REPO", "FINAL REPORT REQUEST → $request")
+        AppLogger.d("REPO", "Generating report for session → $currentSessionId")
 
-        val response = api.submitReport(request)
+        val reportDto = api.submitReport(request)
 
-        AppLogger.d("REPO", "REPORT API SUCCESS → clearing local DB")
-
-
-        val report = response.toDomain()
+        val report = reportDto.toDomain()
 
         reportLocal.insert(report)
 
-        sessionLocal.clear()
-
         return report
-
-
     }
     override suspend fun getStoredAnswer(questionId: String): AnswerDto? {
         return storedAnswersMap[questionId]
@@ -179,12 +120,19 @@ class AssessmentRepositoryImpl(
         }
     }
 
+    override suspend fun syncReports() {
 
+        AppLogger.d("REPO", "Syncing reports from server")
 
+        val reports = api.getUserReports()
 
+        reportLocal.clearAll()
 
+        reports
+            .map { it.toDomain() }
+            .forEach { reportLocal.insert(it) }
 
-
-
+        AppLogger.d("REPO", "Reports synced → ${reports.size}")
+    }
 
 }

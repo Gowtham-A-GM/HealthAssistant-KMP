@@ -1,9 +1,6 @@
 package com.example.healthassistant.data.remote.assessment
 
-import com.example.healthassistant.data.remote.assessment.dto.AnswerRequestDto
-import com.example.healthassistant.data.remote.assessment.dto.AssessmentResponseDto
-import com.example.healthassistant.data.remote.assessment.dto.ContextRequestDto
-import com.example.healthassistant.data.remote.assessment.dto.ReportResponseDto
+import com.example.healthassistant.data.remote.assessment.dto.ReportDto
 import com.example.healthassistant.data.remote.assessment.dto.StartAssessmentResponseDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRequestDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerResponseDto
@@ -17,14 +14,11 @@ interface AssessmentApi {
         request: SubmitAnswerRequestDto
     ): SubmitAnswerResponseDto
 
-
     suspend fun submitReport(
         request: SubmitReportRequestDto
-    ): ReportResponseDto
+    ): ReportDto
 
     suspend fun endSession(sessionId: String)
 
-
-
-
+    suspend fun getUserReports(): List<ReportDto>
 }

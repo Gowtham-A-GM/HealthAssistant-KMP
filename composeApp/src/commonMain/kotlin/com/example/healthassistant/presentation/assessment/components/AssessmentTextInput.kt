@@ -52,7 +52,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.ResponseOption
-import com.example.healthassistant.presentation.assessment.model.AssessmentPhase
 import healthassistant.composeapp.generated.resources.Res
 import healthassistant.composeapp.generated.resources.img_avatar
 import org.jetbrains.compose.resources.painterResource

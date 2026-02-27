@@ -4,11 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SubmitReportRequestDto(
-    val responses: List<SimpleResponseDto>
-)
-
-@Serializable
-data class SimpleResponseDto(
-    val question: String,
-    val answer: String
+    val session_id: String
 )
