@@ -44,8 +44,15 @@ class ChatViewModel(
                 }
 
             } catch (e: Exception) {
+
+                AppLogger.d("CHAT_VM", "START CHAT ERROR → ${e.message}")
+                e.printStackTrace()
+
                 _state.update {
-                    it.copy(isLoading = false, error = "Failed to start chat")
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to start chat"
+                    )
                 }
             }
         }

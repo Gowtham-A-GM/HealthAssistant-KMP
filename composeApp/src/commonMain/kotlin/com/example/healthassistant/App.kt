@@ -106,9 +106,7 @@ fun App(
         val chatRepository = remember {
             ChatRepositoryImpl(
                 api = chatApi,
-                local = chatLocal,
-                profileLocal = profileLocal,
-                reportLocal = reportLocal
+                local = chatLocal
             )
         }
 
@@ -197,7 +195,7 @@ fun App(
                 AppScreen.OnboardingMedical ->
                     AppScreen.OnboardingProfile
 
-                is AppScreen.Chat -> AppScreen.Home
+                is AppScreen.Chat -> currentScreen
 
                 is AppScreen.AssessmentCauseDetail ->
                     AppScreen.AssessmentReport

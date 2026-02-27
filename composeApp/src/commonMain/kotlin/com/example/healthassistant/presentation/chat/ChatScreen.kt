@@ -28,12 +28,14 @@ import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.ui.graphics.graphicsLayer
+import com.example.healthassistant.core.platform.PlatformBackHandler
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppTypography
 import com.example.healthassistant.domain.model.chat.Role
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ChatScreen(
     viewModel: ChatViewModel,
@@ -43,12 +45,19 @@ fun ChatScreen(
 
     val state by viewModel.state.collectAsState()
     var showExitDialog by remember { mutableStateOf(false) }
+
+    PlatformBackHandler {
+        showExitDialog = true
+    }
+
+
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
     // Start chat
-    LaunchedEffect(Unit) {
-        if (state.messages.isEmpty()) {
+    // Start chat safely
+    LaunchedEffect(currentReportId) {
+        if (state.sessionId == null) {
             viewModel.startChat(currentReportId)
         }
     }

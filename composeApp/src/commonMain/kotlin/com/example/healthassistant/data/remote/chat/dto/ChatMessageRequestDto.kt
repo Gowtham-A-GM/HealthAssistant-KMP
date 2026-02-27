@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChatMessageRequestDto(
     val session_id: String,
-    val history: List<ChatHistoryDto>
+    val message: String
 )
 
 @Serializable

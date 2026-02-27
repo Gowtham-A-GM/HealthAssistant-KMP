@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChatStartRequestDto(
-    val profile_data: List<ProfileDataDto>,
-    val reports: List<ChatReportWrapperDto>
+    val main_report_id: String? = null,
+    val entry_point: String
 )
