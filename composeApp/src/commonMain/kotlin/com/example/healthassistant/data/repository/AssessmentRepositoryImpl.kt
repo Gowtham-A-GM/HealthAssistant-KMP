@@ -18,6 +18,7 @@ import com.example.healthassistant.domain.model.assessment.AssessmentSession
 import com.example.healthassistant.domain.model.assessment.Question
 import com.example.healthassistant.domain.model.assessment.Report
 import com.example.healthassistant.domain.repository.AssessmentRepository
+import kotlinx.serialization.encodeToString
 
 class AssessmentRepositoryImpl(
     private val api: AssessmentApi,
@@ -52,20 +53,50 @@ class AssessmentRepositoryImpl(
 
     override suspend fun submitAnswer(
         question: Question,
-        answer: AnswerDto
+        answer: AnswerDto,
+        imageBytes: ByteArray?,
+        imageFileName: String?
     ): AssessmentSession? {
 
-        val request = SubmitAnswerRequestDto(
-            session_id = currentSessionId,
-            question_id = question.id,
-            question_text = question.text,
-            answer_json = answer
+        imageBytes?.let {
+
+            AppLogger.d(
+                "IMAGE_UPLOAD",
+                "Image size bytes: ${it.size}"
+            )
+
+            AppLogger.d(
+                "IMAGE_UPLOAD",
+                "Image size KB: ${it.size / 1024}"
+            )
+        }
+
+        val finalImageBytes = imageBytes?.let {
+
+            val maxSize = 50 * 1024 * 1024   // 50MB
+
+            if (it.size <= maxSize) {
+                it
+            } else {
+
+                AppLogger.d(
+                    "IMAGE_UPLOAD",
+                    "Image larger than 50MB → compressing"
+                )
+
+                compressImageBytes(it)
+            }
+        }
+
+
+        val response = api.submitAnswer(
+            sessionId = currentSessionId,
+            questionId = question.id,
+            questionText = question.text,
+            answer = answer,
+            imageBytes = finalImageBytes,
+            imageFileName = imageFileName
         )
-
-        val response = api.submitAnswer(request)
-
-        // ❌ REMOVE sessionLocal.insertContext()
-        // Server stores session answers now.
 
         return if (response.status == "completed") {
             null
@@ -133,6 +164,22 @@ class AssessmentRepositoryImpl(
             .forEach { reportLocal.insert(it) }
 
         AppLogger.d("REPO", "Reports synced → ${reports.size}")
+    }
+
+    private fun compressImageBytes(bytes: ByteArray): ByteArray {
+
+        val maxSize = 50 * 1024 * 1024
+
+        if (bytes.size <= maxSize) return bytes
+
+        var newSize = maxSize
+
+        AppLogger.d(
+            "IMAGE_UPLOAD",
+            "Reducing image size from ${bytes.size} to $newSize"
+        )
+
+        return bytes.copyOf(newSize)
     }
 
 }

@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.pointerInput
+import com.example.healthassistant.core.image.ImagePickerManager
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.ResponseOption
@@ -37,6 +38,7 @@ import com.example.healthassistant.presentation.assessment.components.BottomAsse
 import com.example.healthassistant.presentation.assessment.components.GradientOptionButton
 import com.example.healthassistant.presentation.assessment.components.GradientTextInput
 import com.example.healthassistant.presentation.assessment.components.QuestionSection
+import com.example.healthassistant.presentation.assessment.visual.VisualBodySelector
 
 
 @Composable
@@ -148,63 +150,130 @@ fun AssessmentScreen(
 
                 state.currentQuestion?.let { question ->
 
+                    val isSymptomQuestion = question.id == "q_current_ailment"
+                    val isVisualActive = state.isVisualModeActive
+
                     QuestionSection(text = question.text)
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    when (question.responseType) {
+                    // 🔥 NORMAL INPUT AREA (Disabled if visual mode active)
+                    if (!isVisualActive) {
 
-                        "text", "number" -> {
+                        // 🔥 IMAGE QUESTION
+                        if (state.isImageQuestion) {
 
-                            GradientTextInput(
-                                value = state.typedText,
-                                onValueChange = {
-                                    viewModel.onEvent(
-                                        AssessmentEvent.TextChanged(it)
-                                    )
-                                },
-                                onSubmit = {
-                                    viewModel.onEvent(
-                                        AssessmentEvent.SendText
-                                    )
+                            val imagePicker = remember {
+                                ImagePickerManager(viewModel::onImageSelected)
+                            }
+
+                            imagePicker.RenderPickerButton()
+
+                            // ✅ Show submit button only after image selected
+                            if (state.selectedImageBytes != null) {
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = {
+                                        viewModel.onEvent(AssessmentEvent.SendImage)
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(24.dp)
+                                ) {
+                                    Text("Submit Image")
                                 }
-                            )
-                        }
+                            }
+                        } else {
 
-                        "single_choice", "multi_choice" -> {
+                            when (question.responseType) {
 
-                            val options =
-                                question.responseOptions ?: emptyList()
+                                "text", "number" -> {
 
-                            if (options.size <= 4) {
-
-                                options.forEach { option ->
-
-                                    GradientOptionButton(
-                                        text = t(option.label),
-                                        onClick = {
+                                    GradientTextInput(
+                                        value = state.typedText,
+                                        onValueChange = {
                                             viewModel.onEvent(
-                                                AssessmentEvent.OptionSelected(option.id)
+                                                AssessmentEvent.TextChanged(it)
+                                            )
+                                        },
+                                        onSubmit = {
+                                            viewModel.onEvent(
+                                                AssessmentEvent.SendText
                                             )
                                         }
                                     )
-
-                                    Spacer(modifier = Modifier.height(16.dp))
                                 }
 
-                            } else {
+                                "single_choice", "multi_choice" -> {
 
-                                StyledDropdown(
-                                    options = options,
-                                    questionId = question.id,
-                                    onOptionSelected = { selectedId ->
-                                        viewModel.onEvent(
-                                            AssessmentEvent.OptionSelected(selectedId)
+                                    val options =
+                                        question.responseOptions ?: emptyList()
+
+                                    if (options.size <= 4) {
+
+                                        options.forEach { option ->
+
+                                            GradientOptionButton(
+                                                text = t(option.label),
+                                                onClick = {
+                                                    if (!state.isSubmitting) {
+                                                        viewModel.onEvent(
+                                                            AssessmentEvent.OptionSelected(option.id)
+                                                        )
+                                                    }
+                                                }
+                                            )
+
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                        }
+
+                                    } else {
+
+                                        StyledDropdown(
+                                            options = options,
+                                            questionId = question.id,
+                                            onOptionSelected = { selectedId ->
+                                                if (!state.isSubmitting) {
+                                                    viewModel.onEvent(
+                                                        AssessmentEvent.OptionSelected(selectedId)
+                                                    )
+                                                }
+                                            }
                                         )
                                     }
-                                )
+                                }
                             }
                         }
+
+                        // 🔥 VISUAL ENTRY BUTTON (ONLY FOR q_symptom)
+                        if (isSymptomQuestion) {
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Button(
+                                onClick = {
+                                    viewModel.onEvent(
+                                        AssessmentEvent.OpenVisualMode
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                Text("Point on the body")
+                            }
+                        }
+                    }
+
+                    // 🔥 IF VISUAL MODE ACTIVE → SHOW VISUAL SELECTOR
+                    if (isVisualActive) {
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        VisualBodySelector(
+                            state = state,
+                            onEvent = { viewModel.onEvent(it) }
+                        )
                     }
                 }
 
@@ -371,3 +440,5 @@ fun ChooseUserScreen(
         }
     }
 }
+
+

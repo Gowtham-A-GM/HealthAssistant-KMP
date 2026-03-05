@@ -1,6 +1,7 @@
 package com.example.healthassistant.data.remote.assessment
 
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
 import com.example.healthassistant.data.remote.assessment.dto.ReportDto
 import com.example.healthassistant.data.remote.assessment.dto.StartAssessmentResponseDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRequestDto
@@ -8,11 +9,17 @@ import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRespon
 import com.example.healthassistant.data.remote.assessment.dto.SubmitReportRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import kotlinx.serialization.json.Json
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import kotlinx.serialization.encodeToString
 
 class AssessmentApiImpl(
     private val client: HttpClient,
@@ -35,18 +42,66 @@ class AssessmentApiImpl(
     }
 
     override suspend fun submitAnswer(
-        request: SubmitAnswerRequestDto
+        sessionId: String,
+        questionId: String,
+        questionText: String,
+        answer: AnswerDto,
+        imageBytes: ByteArray?,
+        imageFileName: String?
     ): SubmitAnswerResponseDto {
 
-        val response =
+        return if (imageBytes == null) {
+
+            // 🔹 EXACT OLD JSON CONTRACT (UNCHANGED)
             client.post("$baseUrl/assessment/answer") {
                 contentType(ContentType.Application.Json)
-                setBody(request)
-            }.body<SubmitAnswerResponseDto>()
+                setBody(
+                    SubmitAnswerRequestDto(
+                        session_id = sessionId,
+                        question_id = questionId,
+                        question_text = questionText,
+                        answer_json = answer
+                    )
+                )
+            }.body()
 
-        AppLogger.d("API", "Answer status → ${response.status}")
+        } else {
 
-        return response
+            // 🔥 MULTIPART FLOW (ONLY HERE WE ENCODE)
+            client.post("$baseUrl/assessment/answer") {
+
+                setBody(
+                    io.ktor.client.request.forms.MultiPartFormDataContent(
+                        formData {
+                            append("session_id", sessionId)
+                            append("question_id", questionId)
+                            append("question_text", questionText)
+
+                            // 🔥 Encode ONLY for multipart
+                            append(
+                                "answer_json",
+                                Json.encodeToString(answer)
+                            )
+
+                            append(
+                                key = "image",
+                                value = imageBytes,
+                                headers = io.ktor.http.Headers.build {
+                                    append(
+                                        HttpHeaders.ContentDisposition,
+                                        "form-data; name=\"image\"; filename=\"${imageFileName ?: "image.jpg"}\""
+                                    )
+                                    append(
+                                        HttpHeaders.ContentType,
+                                        "image/jpeg"
+                                    )
+                                }
+                            )
+                        }
+                    )
+                )
+            }.body()
+        }
     }
 
     override suspend fun submitReport(

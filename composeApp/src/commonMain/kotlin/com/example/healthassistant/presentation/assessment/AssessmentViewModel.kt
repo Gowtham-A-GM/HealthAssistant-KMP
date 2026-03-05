@@ -71,6 +71,17 @@ class AssessmentViewModel(
     fun onEvent(event: AssessmentEvent) {
         when (event) {
 
+            is AssessmentEvent.SendImage -> {
+
+                val question = _state.value.currentQuestion ?: return
+                val imageBytes = _state.value.selectedImageBytes ?: return
+                val fileName = _state.value.selectedImageFileName ?: "image.jpg"
+
+                if (_state.value.isCompleted) return
+
+                submitImageAnswer(question, imageBytes, fileName)
+            }
+
             is AssessmentEvent.TextChanged -> {
                 _state.value = _state.value.copy(
                     typedText = event.text
@@ -125,6 +136,81 @@ class AssessmentViewModel(
                 )
             }
 
+            is AssessmentEvent.OpenVisualMode -> {
+                _state.value = _state.value.copy(isVisualModeActive = true)
+            }
+
+            is AssessmentEvent.CloseVisualMode -> {
+                _state.value = _state.value.copy(
+                    isVisualModeActive = false,
+                    visualNavigationStack = emptyList()
+                )
+            }
+
+            is AssessmentEvent.BodyPartSelected -> {
+                _state.value = _state.value.copy(
+                    visualNavigationStack =
+                        _state.value.visualNavigationStack + event.partId
+                )
+            }
+
+            AssessmentEvent.VisualBackPressed -> {
+                val stack = _state.value.visualNavigationStack
+                if (stack.isNotEmpty()) {
+                    _state.value = _state.value.copy(
+                        visualNavigationStack = stack.dropLast(1)
+                    )
+                } else {
+                    _state.value = _state.value.copy(
+                        isVisualModeActive = false
+                    )
+                }
+            }
+
+            is AssessmentEvent.VisualSymptomSelected -> {
+                val question = _state.value.currentQuestion ?: return
+                if (_state.value.isSubmitting) return
+
+                _state.value = _state.value.copy(isSubmitting = true)
+
+                viewModelScope.launch {
+
+                    try {
+                        val answerDto = AnswerDto(
+                            type = "visual",
+                            selected_option_id = event.symptomId,
+                            selected_option_label = event.symptomLabel
+                        )
+
+                        val session = repository.submitAnswer(
+                            question = question,
+                            answer = answerDto,
+                            imageBytes = _state.value.selectedImageBytes,
+                            imageFileName = _state.value.selectedImageFileName
+                        )
+
+                        _state.value = _state.value.copy(
+                            isVisualModeActive = false,
+                            visualNavigationStack = emptyList(),
+                            isSubmitting = false
+                        )
+
+                        if (session == null) {
+                            generateReport()
+                            return@launch
+                        }
+
+                        handleIncomingQuestion(session.question)
+
+                    } catch (e: Exception) {
+                        _state.value = _state.value.copy(
+                            isSubmitting = false,
+                            errorMessage = "Failed to submit visual answer"
+                        )
+                    }
+                }
+            }
+
 
             AssessmentEvent.ExitClicked -> {
                 AppLogger.d("VM", "Exit clicked")
@@ -152,7 +238,9 @@ class AssessmentViewModel(
 
                 val session = repository.submitAnswer(
                     question = question,
-                    answer = answerDto
+                    answer = answerDto,
+                    imageBytes = _state.value.selectedImageBytes,
+                    imageFileName = _state.value.selectedImageFileName
                 )
 
                 // 🔥 IF backend says completed
@@ -205,7 +293,9 @@ class AssessmentViewModel(
 
                 val session = repository.submitAnswer(
                     question = question,
-                    answer = answerDto
+                    answer = answerDto,
+                    imageBytes = _state.value.selectedImageBytes,
+                    imageFileName = _state.value.selectedImageFileName
                 )
 
                 // 🔥 IF backend says completed
@@ -329,7 +419,9 @@ class AssessmentViewModel(
 
             val session = repository.submitAnswer(
                 question = question,
-                answer = stored
+                answer = stored,
+                imageBytes = null,
+                imageFileName = null
             )
 
             if (session == null) {
@@ -342,11 +434,16 @@ class AssessmentViewModel(
         }
 
         // Show UI normally
+        val isImage = question.responseType == "image"
+
         _state.value = _state.value.copy(
             isLoading = false,
             currentQuestion = question,
             typedText = "",
-            errorMessage = null
+            errorMessage = null,
+            isImageQuestion = isImage,
+            selectedImageBytes = null,
+            selectedImageFileName = null
         )
 
         speakQuestionIfNeeded(question)
@@ -368,5 +465,68 @@ class AssessmentViewModel(
         }
     }
 
+    fun onImageSelected(bytes: ByteArray, fileName: String) {
+        _state.value = _state.value.copy(
+            selectedImageBytes = bytes,
+            selectedImageFileName = fileName
+        )
+    }
+
+    private fun submitImageAnswer(
+        question: Question,
+        imageBytes: ByteArray,
+        fileName: String
+    ) {
+
+        ttsManager.stop()
+
+        viewModelScope.launch {
+
+            _state.value = _state.value.copy(isLoading = true)
+
+            try {
+
+                val answerDto = AnswerDto(
+                    type = "image",
+                    value = "image received"
+                )
+
+                val session = repository.submitAnswer(
+                    question = question,
+                    answer = answerDto,
+                    imageBytes = imageBytes,
+                    imageFileName = fileName
+                )
+
+                if (session == null) {
+
+                    _state.value = _state.value.copy(
+                        isGeneratingReport = true,
+                        currentQuestion = null
+                    )
+
+                    generateReport()
+                    return@launch
+                }
+
+                _state.value = _state.value.copy(
+                    selectedImageBytes = null,
+                    selectedImageFileName = null
+                )
+
+                handleIncomingQuestion(session.question)
+
+            } catch (e: Exception) {
+
+                AppLogger.d("IMAGE_UPLOAD", "Upload error: ${e.message}")
+                e.printStackTrace()
+
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    errorMessage = "Failed to submit image"
+                )
+            }
+        }
+    }
 
 }

@@ -55,6 +55,8 @@ kotlin {
 
             implementation("com.google.mlkit:translate:17.0.2")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+            implementation("androidx.activity:activity-compose:1.8.0")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

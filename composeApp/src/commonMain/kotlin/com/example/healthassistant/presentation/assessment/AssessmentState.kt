@@ -17,6 +17,15 @@ data class AssessmentState(
     val report: Report? = null,
     val isGeneratingReport: Boolean = false,
 
+    // VISUAL MODE
+    val isVisualModeActive: Boolean = false,
+    val visualNavigationStack: List<String> = emptyList(), // body → subpart
+    val isSubmitting: Boolean = false,
+
+    val isImageQuestion: Boolean = false,
+    val selectedImageBytes: ByteArray? = null,
+    val selectedImageFileName: String? = null,
+
 
 )
 

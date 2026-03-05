@@ -11,7 +11,9 @@ interface AssessmentRepository {
 
     suspend fun submitAnswer(
         question: Question,
-        answer: AnswerDto
+        answer: AnswerDto,
+        imageBytes: ByteArray? = null,
+        imageFileName: String? = null
     ): AssessmentSession?
 
 
