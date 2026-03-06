@@ -7,4 +7,7 @@ expect class ImagePickerManager(
 ) {
     @Composable
     fun RenderPickerButton()
+
+    @Composable
+    fun RenderGalleryPickerButton()
 }

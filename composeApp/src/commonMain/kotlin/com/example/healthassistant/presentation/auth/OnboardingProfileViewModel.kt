@@ -32,6 +32,10 @@ class OnboardingProfileViewModel(
     fun submitProfile() {
 
         val answers = state.value.answers
+        AppLogger.d(
+            "PROFILE_IMAGE",
+            "Submitting profile → image present: ${state.value.profileImageBase64 != null}"
+        )
 
         // -----------------------------
         // REQUIRED QUESTIONS
@@ -98,8 +102,10 @@ class OnboardingProfileViewModel(
             try {
 
                 val request = buildRequest()
+                AppLogger.logJson("PROFILE_API", "PROFILE REQUEST", request)
 
                 val response = repository.submitProfile(request)
+                AppLogger.logJson("PROFILE_API", "PROFILE RESPONSE", response)
 
                 if (response.success) {
 
@@ -138,6 +144,8 @@ class OnboardingProfileViewModel(
         // -------------------------------------------------
 
         state.value.profileImageBase64?.let { base64 ->
+            AppLogger.d("PROFILE_IMAGE", "Adding image to request")
+            AppLogger.d("PROFILE_IMAGE", "Base64 size: ${base64.length}")
 
             answerList.add(
                 ProfileAnswerItemDto(
@@ -245,6 +253,9 @@ class OnboardingProfileViewModel(
     }
 
     fun updateProfileImage(base64: String) {
+        AppLogger.d("PROFILE_IMAGE", "Image received in ViewModel")
+        AppLogger.d("PROFILE_IMAGE", "Base64 length: ${base64.length}")
+
         state.value = state.value.copy(profileImageBase64 = base64)
     }
 

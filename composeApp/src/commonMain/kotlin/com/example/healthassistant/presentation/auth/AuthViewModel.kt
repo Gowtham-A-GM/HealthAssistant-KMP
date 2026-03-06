@@ -80,7 +80,7 @@ class AuthViewModel(
                     TokenManager.saveToken(loginResponse.token)
 
                     try {
-                        assessmentRepository.syncReports()
+                        assessmentRepository.bootstrapSync()
                     } catch (e: Exception) {
                         AppLogger.d("AUTH_VM", "Report sync failed → ${e.message}")
                     }
@@ -128,7 +128,7 @@ class AuthViewModel(
                     AppLogger.d("AUTH_VM", "Login success → syncing reports")
 
                     try {
-                        assessmentRepository.syncReports()
+                        assessmentRepository.bootstrapSync()
                         AppLogger.d("AUTH_VM", "Reports synced successfully")
                     } catch (e: Exception) {
                         AppLogger.d("AUTH_VM", "Report sync failed → ${e.message}")

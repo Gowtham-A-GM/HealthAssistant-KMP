@@ -155,7 +155,7 @@ fun OnboardingProfileScreen(
                             .fillMaxSize()
                             .alpha(0f)
                     ) {
-                        imagePicker.RenderPickerButton()
+                        imagePicker.RenderGalleryPickerButton()
                     }
                 }
             }

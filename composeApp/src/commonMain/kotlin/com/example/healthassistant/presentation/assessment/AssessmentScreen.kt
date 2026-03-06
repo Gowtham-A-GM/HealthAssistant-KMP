@@ -1,45 +1,28 @@
 package com.example.healthassistant.presentation.assessment
 
 
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
-
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-
-
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import com.example.healthassistant.core.image.ImagePickerManager
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.ResponseOption
-import com.example.healthassistant.presentation.assessment.components.AssessmentTopHeader
-import com.example.healthassistant.presentation.assessment.components.AvatarSection
-import com.example.healthassistant.presentation.assessment.components.BottomAssessmentControls
-import com.example.healthassistant.presentation.assessment.components.GradientOptionButton
-import com.example.healthassistant.presentation.assessment.components.GradientTextInput
-import com.example.healthassistant.presentation.assessment.components.QuestionSection
-import com.example.healthassistant.presentation.assessment.visual.VisualBodySelector
-
+import com.example.healthassistant.presentation.assessment.components.*
 
 @Composable
 fun AssessmentScreen(
@@ -47,7 +30,9 @@ fun AssessmentScreen(
     onExit: () -> Unit,
     onReportGenerated: () -> Unit
 ) {
+
     val state by viewModel.state.collectAsState()
+
     var showExitDialog by remember { mutableStateOf(false) }
     var showLoading by remember { mutableStateOf(false) }
 
@@ -59,7 +44,7 @@ fun AssessmentScreen(
 
     LaunchedEffect(state.sessionId) {
         if (state.sessionId.isEmpty()) {
-            AppLogger.d("UI", "AssessmentScreen launched → calling startAssessment()")
+            AppLogger.d("UI", "AssessmentScreen launched → startAssessment()")
             viewModel.startAssessment()
         }
     }
@@ -75,35 +60,23 @@ fun AssessmentScreen(
                         showExitDialog = false
                         viewModel.endAssessment { onExit() }
                     }
-                ) {
-                    Text(t("YES"), color = Color.Red)
-                }
+                ) { Text(t("YES"), color = Color.Red) }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showExitDialog = false }
-                ) {
+                TextButton(onClick = { showExitDialog = false }) {
                     Text(t("Cancel"))
                 }
             }
         )
     }
 
-
     LaunchedEffect(state.isLoading, state.isGeneratingReport) {
-
         if (state.isLoading || state.isGeneratingReport) {
-
-            // Wait 3 seconds before showing loader
             kotlinx.coroutines.delay(1000)
-
-            // If still loading after delay → show
             if (state.isLoading || state.isGeneratingReport) {
                 showLoading = true
             }
-
         } else {
-            // Immediately hide when loading finishes
             showLoading = false
         }
     }
@@ -128,39 +101,59 @@ fun AssessmentScreen(
                 .background(MaterialTheme.colorScheme.background)
         ) {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            // ---------- VISUAL MODE ----------
+            if (state.isVisualModeActive) {
 
-                AssessmentTopHeader(
-                    onClose = { showExitDialog = true }
-                )
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
 
-                Spacer(modifier = Modifier.height(32.dp))
+                    AssessmentTopHeader(
+                        onClose = { viewModel.onEvent(AssessmentEvent.CloseVisualMode) }
+                    )
 
-                AvatarSection(
-                    isMuted = state.isMuted,
-                    isSpeaking = !state.isMuted
-                )
+                    BodySelector(
+                        onBodyPartClick = { bodyPart ->
+                            viewModel.onEvent(
+                                AssessmentEvent.BodyPartSelected(bodyPart)
+                            )
+                        }
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(32.dp))
+            } else {
 
-                state.currentQuestion?.let { question ->
+                // ---------- NORMAL MODE ----------
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-                    val isSymptomQuestion = question.id == "q_current_ailment"
-                    val isVisualActive = state.isVisualModeActive
+                    AssessmentTopHeader(
+                        onClose = { showExitDialog = true }
+                    )
 
-                    QuestionSection(text = question.text)
+                    Spacer(Modifier.height(32.dp))
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    AvatarSection(
+                        isMuted = state.isMuted,
+                        isSpeaking = !state.isMuted
+                    )
 
-                    // 🔥 NORMAL INPUT AREA (Disabled if visual mode active)
-                    if (!isVisualActive) {
+                    Spacer(Modifier.height(32.dp))
 
-                        // 🔥 IMAGE QUESTION
+                    state.currentQuestion?.let { question ->
+
+                        val isSymptomQuestion =
+                            question.id == "q_current_ailment"
+
+                        QuestionSection(text = question.text)
+
+                        Spacer(Modifier.height(28.dp))
+
+                        // IMAGE QUESTION
                         if (state.isImageQuestion) {
 
                             val imagePicker = remember {
@@ -169,14 +162,15 @@ fun AssessmentScreen(
 
                             imagePicker.RenderPickerButton()
 
-                            // ✅ Show submit button only after image selected
                             if (state.selectedImageBytes != null) {
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(Modifier.height(16.dp))
 
                                 Button(
                                     onClick = {
-                                        viewModel.onEvent(AssessmentEvent.SendImage)
+                                        viewModel.onEvent(
+                                            AssessmentEvent.SendImage
+                                        )
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(24.dp)
@@ -184,6 +178,7 @@ fun AssessmentScreen(
                                     Text("Submit Image")
                                 }
                             }
+
                         } else {
 
                             when (question.responseType) {
@@ -225,7 +220,7 @@ fun AssessmentScreen(
                                                 }
                                             )
 
-                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Spacer(Modifier.height(16.dp))
                                         }
 
                                     } else {
@@ -246,10 +241,10 @@ fun AssessmentScreen(
                             }
                         }
 
-                        // 🔥 VISUAL ENTRY BUTTON (ONLY FOR q_symptom)
+                        // POINT ON BODY BUTTON
                         if (isSymptomQuestion) {
 
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(Modifier.height(24.dp))
 
                             Button(
                                 onClick = {
@@ -265,25 +260,24 @@ fun AssessmentScreen(
                         }
                     }
 
-                    // 🔥 IF VISUAL MODE ACTIVE → SHOW VISUAL SELECTOR
-                    if (isVisualActive) {
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        VisualBodySelector(
-                            state = state,
-                            onEvent = { viewModel.onEvent(it) }
-                        )
-                    }
+                    Spacer(Modifier.weight(1f))
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
-
+                BottomAssessmentControls(
+                    isMuted = state.isMuted,
+                    isMicOn = state.isListening,
+                    onMicClick = {
+                        viewModel.onEvent(AssessmentEvent.MicClicked)
+                    },
+                    onVolumeClick = {
+                        viewModel.onEvent(AssessmentEvent.VolumeClicked)
+                    },
+                    onExit = { showExitDialog = true },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
 
-            AnimatedVisibility(
-                visible = showLoading
-            ) {
+            AnimatedVisibility(visible = showLoading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -295,29 +289,17 @@ fun AssessmentScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(Modifier.height(16.dp))
                         Text(
-                            text = if (state.isGeneratingReport)
-                                t("Generating your medical report...")
-                            else
-                                t("Preparing next question...")
+                            text =
+                                if (state.isGeneratingReport)
+                                    t("Generating your medical report...")
+                                else
+                                    t("Preparing next question...")
                         )
                     }
                 }
             }
-
-            BottomAssessmentControls(
-                isMuted = state.isMuted,
-                isMicOn = state.isListening, // or your mic state
-                onMicClick = {
-                    viewModel.onEvent(AssessmentEvent.MicClicked)
-                },
-                onVolumeClick = {
-                    viewModel.onEvent(AssessmentEvent.VolumeClicked)
-                },
-                onExit = { showExitDialog = true },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
         }
     }
 }
@@ -395,10 +377,6 @@ fun StyledDropdown(
         }
     }
 }
-
-
-
-
 
 @Composable
 private fun ActionIcon(

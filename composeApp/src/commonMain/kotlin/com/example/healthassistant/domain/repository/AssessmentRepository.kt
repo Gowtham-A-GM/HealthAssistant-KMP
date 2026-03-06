@@ -29,6 +29,8 @@ interface AssessmentRepository {
 
     suspend fun syncReports()
 
+    suspend fun bootstrapSync()
+
 
 
 }

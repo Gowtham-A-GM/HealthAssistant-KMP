@@ -1,6 +1,8 @@
 package com.example.healthassistant.data.repository
 
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.data.local.profile.GeneralProfileLocalDataSource
+import com.example.healthassistant.data.local.profile.MedicalProfileLocalDataSource
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSource
 import com.example.healthassistant.data.local.report.ReportLocalDataSource
 //import com.example.healthassistant.data.local.assessment.AssessmentLocalDataSource
@@ -14,6 +16,7 @@ import com.example.healthassistant.data.remote.assessment.dto.ResponseOptionDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRequestDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitReportRequestDto
 import com.example.healthassistant.data.remote.assessment.mapper.toDomain
+import com.example.healthassistant.data.remote.bootstrap.BootstrapApi
 import com.example.healthassistant.domain.model.assessment.AssessmentSession
 import com.example.healthassistant.domain.model.assessment.Question
 import com.example.healthassistant.domain.model.assessment.Report
@@ -22,11 +25,12 @@ import kotlinx.serialization.encodeToString
 
 class AssessmentRepositoryImpl(
     private val api: AssessmentApi,
+    private val bootstrapApi: BootstrapApi,
     private val profileLocal: ProfileLocalDataSource,
-    private val reportLocal: ReportLocalDataSource
-)
-
- : AssessmentRepository {
+    private val reportLocal: ReportLocalDataSource,
+    private val generalProfileLocal: GeneralProfileLocalDataSource,
+    private val medicalProfileLocal: MedicalProfileLocalDataSource
+) : AssessmentRepository {
 
     private var storedAnswersMap: Map<String, AnswerDto> = emptyMap()
 
@@ -164,6 +168,50 @@ class AssessmentRepositoryImpl(
             .forEach { reportLocal.insert(it) }
 
         AppLogger.d("REPO", "Reports synced → ${reports.size}")
+    }
+
+    override suspend fun bootstrapSync() {
+
+        AppLogger.d("REPO", "Bootstrap syncing user data")
+
+        val response = bootstrapApi.getBootstrap()
+
+        // REPORTS
+        reportLocal.clearAll()
+
+        response.reports
+            .map { it.toDomain() }
+            .forEach { reportLocal.insert(it) }
+
+        AppLogger.d("REPO", "Reports synced → ${response.reports.size}")
+
+        // PROFILE
+        generalProfileLocal.clearAll()
+
+        response.profile.forEach {
+
+            generalProfileLocal.insert(
+                questionId = it.question_id,
+                questionText = it.question_text,
+                answerJson = it.answer_json.toString()
+            )
+        }
+
+        AppLogger.d("REPO", "Profile answers synced → ${response.profile.size}")
+
+        // MEDICAL
+        medicalProfileLocal.clearAll()
+
+        response.medical.forEach {
+
+            medicalProfileLocal.insert(
+                questionId = it.question_id,
+                questionText = it.question_text,
+                answerJson = it.answer_json.toString()
+            )
+        }
+
+        AppLogger.d("REPO", "Medical answers synced → ${response.medical.size}")
     }
 
     private fun compressImageBytes(bytes: ByteArray): ByteArray {

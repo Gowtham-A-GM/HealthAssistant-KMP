@@ -99,4 +99,40 @@ actual class ImagePickerManager actual constructor(
             }
         }
     }
+
+    @Composable
+    fun RenderGalleryPickerButton() {
+
+        val context = LocalContext.current
+
+        val galleryLauncher =
+            rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.GetContent()
+            ) { uri ->
+
+                uri?.let {
+
+                    val inputStream =
+                        context.contentResolver.openInputStream(it)
+
+                    val bytes = inputStream?.readBytes()
+
+                    inputStream?.close()
+
+                    if (bytes != null) {
+                        onImageSelected(bytes, "gallery_image.jpg")
+                    }
+                }
+            }
+
+        Button(
+            onClick = {
+                galleryLauncher.launch("image/*")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Text("Choose Photo")
+        }
+    }
 }

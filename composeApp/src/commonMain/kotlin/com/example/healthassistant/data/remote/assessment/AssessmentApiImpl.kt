@@ -7,6 +7,7 @@ import com.example.healthassistant.data.remote.assessment.dto.StartAssessmentRes
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRequestDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerResponseDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitReportRequestDto
+import com.example.healthassistant.data.remote.bootstrap.dto.BootstrapResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
@@ -131,6 +132,15 @@ class AssessmentApiImpl(
         AppLogger.d("API", "GET /user/reports")
 
         return client.get("$baseUrl/user/reports") {
+            contentType(ContentType.Application.Json)
+        }.body()
+    }
+
+    override suspend fun getBootstrap(): BootstrapResponseDto {
+
+        AppLogger.d("API", "GET /user/bootstrap")
+
+        return client.get("$baseUrl/user/bootstrap") {
             contentType(ContentType.Application.Json)
         }.body()
     }

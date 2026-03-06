@@ -26,9 +26,12 @@ import com.example.healthassistant.core.platform.PlatformBackHandler
 import com.example.healthassistant.core.stt.SpeechToTextManager
 import com.example.healthassistant.core.tts.TextToSpeechManager
 import com.example.healthassistant.data.local.chat.ChatLocalDataSourceImpl
+import com.example.healthassistant.data.local.profile.GeneralProfileLocalDataSourceImpl
+import com.example.healthassistant.data.local.profile.MedicalProfileLocalDataSourceImpl
 import com.example.healthassistant.data.local.profile.ProfileLocalDataSourceImpl
 import com.example.healthassistant.data.local.report.ReportLocalDataSourceImpl
 import com.example.healthassistant.data.remote.auth.AuthApiImpl
+import com.example.healthassistant.data.remote.bootstrap.BootstrapApiImpl
 import com.example.healthassistant.data.remote.chat.ChatApiImpl
 import com.example.healthassistant.data.remote.profile.ProfileApiImpl
 import com.example.healthassistant.data.repository.AuthRepositoryImpl
@@ -51,6 +54,7 @@ import com.example.healthassistant.presentation.home.EmergencyAction
 import com.example.healthassistant.presentation.home.HomeScreen
 import com.example.healthassistant.presentation.home.HomeViewModel
 import com.example.healthassistant.presentation.news.NewsViewModel
+import com.example.healthassistant.presentation.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -74,6 +78,13 @@ fun App(
             )
         }
 
+        val bootstrapApi = remember {
+            BootstrapApiImpl(
+                client = NetworkClient.httpClient,
+                baseUrl = AppConfig.BASE_URL
+            )
+        }
+
 
         val profileLocal = remember {
             ProfileLocalDataSourceImpl(database)
@@ -83,12 +94,23 @@ fun App(
             ReportLocalDataSourceImpl(database)
         }
 
+        val generalProfileLocal = remember {
+            GeneralProfileLocalDataSourceImpl(database)
+        }
+
+        val medicalProfileLocal = remember {
+            MedicalProfileLocalDataSourceImpl(database)
+        }
+
 
         val repository = remember {
             AssessmentRepositoryImpl(
                 api = api,
+                bootstrapApi = bootstrapApi,
                 profileLocal = profileLocal,
-                reportLocal = reportLocal
+                reportLocal = reportLocal,
+                generalProfileLocal = generalProfileLocal,
+                medicalProfileLocal = medicalProfileLocal
             )
         }
 
@@ -271,6 +293,24 @@ fun App(
                         }
                     )
 
+                    AppScreen.Settings -> SettingsScreen(
+                        onBack = {
+                            currentScreen = AppScreen.Home
+                        },
+                        onProfileClick = {
+                            AppLogger.d("SETTINGS", "Profile clicked")
+                        },
+                        onMedicalClick = {
+                            AppLogger.d("SETTINGS", "Medical clicked")
+                        },
+                        onLanguageClick = {
+                            // open language dialog later
+                        },
+                        onLogoutClick = {
+                            currentScreen = AppScreen.Login
+                        }
+                    )
+
 
 
                     AppScreen.Home -> HomeScreen(
@@ -280,6 +320,9 @@ fun App(
                             },
                             onOpenChat = {
                                 currentScreen = AppScreen.Chat(reportId = null)
+                            },
+                            onOpenSettings = {
+                                currentScreen = AppScreen.Settings
                             }
                         ),
                         onEmergencyAction = { action ->
@@ -288,6 +331,7 @@ fun App(
                             onEmergencyAction(action, emergencyContactNumber)
                         }
                     )
+
 
                     AppScreen.Assessment -> AssessmentScreen(
                         viewModel = assessmentViewModel,
@@ -375,7 +419,8 @@ fun App(
                 currentScreen != AppScreen.Login &&
                 currentScreen != AppScreen.Signup &&
                 currentScreen != AppScreen.OnboardingProfile &&
-                currentScreen != AppScreen.OnboardingMedical
+                currentScreen != AppScreen.OnboardingMedical &&
+                currentScreen != AppScreen.Settings
             ) {
                 BottomNavBar(
                     selected = currentScreen,

@@ -6,6 +6,7 @@ import com.example.healthassistant.data.remote.assessment.dto.StartAssessmentRes
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerRequestDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitAnswerResponseDto
 import com.example.healthassistant.data.remote.assessment.dto.SubmitReportRequestDto
+import com.example.healthassistant.data.remote.bootstrap.dto.BootstrapResponseDto
 
 interface AssessmentApi {
 
@@ -27,4 +28,6 @@ interface AssessmentApi {
     suspend fun endSession(sessionId: String)
 
     suspend fun getUserReports(): List<ReportDto>
+
+    suspend fun getBootstrap(): BootstrapResponseDto
 }

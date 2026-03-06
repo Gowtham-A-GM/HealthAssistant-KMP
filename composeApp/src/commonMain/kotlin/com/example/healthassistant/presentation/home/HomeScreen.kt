@@ -49,7 +49,7 @@ fun HomeScreen(
                 }
 
                 HomeEvent.SettingsClicked -> {
-                    showLanguageDialog = true   // 👈 OPEN LANGUAGE DIALOG
+                    viewModel.onEvent(HomeEvent.SettingsClicked)
                 }
 
                 else -> viewModel.onEvent(event)
