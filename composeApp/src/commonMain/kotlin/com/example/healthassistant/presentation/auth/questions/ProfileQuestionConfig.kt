@@ -6,163 +6,156 @@ object ProfileQuestionConfig {
 
     val questions = listOf(
 
-        // 🔹 BASIC IDENTITY
+        // -----------------------------
+        // PERSONAL INFORMATION
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_name",
-            questionText = "What is your full name?",
-            type = "text"
+            questionText = "Full Name",
+            type = "text",
+            required = true
         ),
 
         QuestionUiModel(
             id = "q_age",
-            questionText = "What is your age group?",
-            type = "single_choice",
-            options = listOf(
-                "under_18",
-                "18_25",
-                "26_35",
-                "36_45",
-                "46_55",
-                "56_65",
-                "66_75",
-                "over_75"
-            )
+            questionText = "Age",
+            type = "number",
+            required = true
         ),
 
         QuestionUiModel(
             id = "q_gender",
-            questionText = "What is your sex assigned at birth?",
+            questionText = "Sex Assigned at Birth",
             type = "single_choice",
             options = listOf(
-                "male",
-                "female",
-                "intersex",
-                "prefer_not_to_say"
-            )
+                "Male",
+                "Female",
+                "Intersex",
+                "Prefer not to say"
+            ),
+            required = true
         ),
-
-        // 🔹 CONTACT INFO
 
         QuestionUiModel(
             id = "q_city",
-            questionText = "Which city do you live in?",
-            type = "text"
+            questionText = "City of Residence",
+            type = "text",
+            required = true
         ),
 
-        QuestionUiModel(
-            id = "q_emergency_relation",
-            questionText = "Who is your emergency contact?",
-            type = "single_choice",
-            options = listOf(
-                "father",
-                "mother",
-                "spouse",
-                "sibling",
-                "friend",
-                "guardian",
-                "other"
-            )
-        ),
-
-        QuestionUiModel(
-            id = "q_emergency_number",
-            questionText = "Emergency contact phone number",
-            type = "text"
-        ),
-
-        // 🔹 PHYSICAL INFO
+        // -----------------------------
+        // HEALTH INFORMATION
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_blood_group",
-            questionText = "What is your blood group?",
+            questionText = "Blood Group",
             type = "single_choice",
             options = listOf(
-                "a_positive",
-                "a_negative",
-                "b_positive",
-                "b_negative",
-                "ab_positive",
-                "ab_negative",
-                "o_positive",
-                "o_negative",
-                "unknown"
-            )
+                "A+",
+                "A-",
+                "B+",
+                "B-",
+                "AB+",
+                "AB-",
+                "O+",
+                "O-",
+                "Unknown"
+            ),
+            required = true
         ),
+
+        // -----------------------------
+        // PHYSICAL INFORMATION
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_height_range",
-            questionText = "Select your height range",
+            questionText = "Height Range",
             type = "single_choice",
             options = listOf(
-                "below_150_cm",
-                "150_160_cm",
-                "161_170_cm",
-                "171_180_cm",
-                "above_180_cm"
-            )
+                "Below 140 cm",
+                "140 – 150 cm",
+                "150 – 160 cm",
+                "160 – 170 cm",
+                "170 – 180 cm",
+                "180 – 190 cm",
+                "Above 190 cm"
+            ),
+            required = false
         ),
 
         QuestionUiModel(
             id = "q_weight_range",
-            questionText = "Select your weight range",
+            questionText = "Weight Range",
             type = "single_choice",
             options = listOf(
-                "below_50_kg",
-                "50_60_kg",
-                "61_70_kg",
-                "71_80_kg",
-                "above_80_kg"
-            )
+                "Below 40 kg",
+                "40 – 50 kg",
+                "50 – 60 kg",
+                "60 – 70 kg",
+                "70 – 80 kg",
+                "80 – 90 kg",
+                "Above 90 kg"
+            ),
+            required = false
         ),
 
-        // 🔹 LIFESTYLE
+        // -----------------------------
+        // LIFESTYLE INFORMATION
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_occupation",
-            questionText = "What is your occupation?",
+            questionText = "Occupation",
             type = "single_choice",
             options = listOf(
-                "student",
-                "working_professional",
-                "self_employed",
-                "homemaker",
-                "retired",
-                "unemployed",
-                "other"
-            )
+                "Student",
+                "Working Professional",
+                "Self-Employed",
+                "Homemaker",
+                "Retired",
+                "Unemployed",
+                "Other"
+            ),
+            required = true
         )
     )
 
-    // 🔹 CONDITIONAL (Female)
+    // -----------------------------
+    // FEMALE SPECIFIC QUESTIONS
+    // -----------------------------
 
     val femaleConditional = listOf(
 
         QuestionUiModel(
             id = "q_pregnancy_status",
-            questionText = "What is your pregnancy status?",
+            questionText = "Pregnancy Status",
             type = "single_choice",
             options = listOf(
-                "pregnant",
-                "trying_to_conceive",
-                "postpartum",
-                "breastfeeding",
-                "menopausal",
-                "not_applicable"
-            )
+                "Pregnant",
+                "Trying to conceive",
+                "Postpartum",
+                "Breastfeeding",
+                "Menopausal",
+                "Not applicable"
+            ),
+            required = false
         ),
 
         QuestionUiModel(
             id = "q_menstrual_status",
-            questionText = "What is your menstrual cycle status?",
+            questionText = "Menstrual Cycle Status",
             type = "single_choice",
             options = listOf(
-                "regular_cycle",
-                "irregular_cycle",
-                "currently_menstruating",
-                "missed_period",
-                "not_applicable"
-            )
+                "Regular cycle",
+                "Irregular cycle",
+                "Currently menstruating",
+                "Missed period",
+                "Not applicable"
+            ),
+            required = false
         )
     )
 }

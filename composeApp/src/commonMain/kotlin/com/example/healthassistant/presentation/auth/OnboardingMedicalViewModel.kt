@@ -20,6 +20,28 @@ class OnboardingMedicalViewModel(
 
     fun submitMedical() {
 
+        val requiredQuestions = listOf(
+            "q_past_conditions",
+            "q_surgeries",
+            "q_family_history",
+            "q_current_medication",
+            "q_allergies",
+            "q_smoking",
+            "q_alcohol"
+        )
+
+        for (questionId in requiredQuestions) {
+
+            if (state.value.answers[questionId].isNullOrBlank()) {
+
+                state.value = state.value.copy(
+                    errorMessage = "Please complete all required fields"
+                )
+
+                return
+            }
+        }
+
         viewModelScope.launch {
 
             state.value = state.value.copy(isLoading = true)

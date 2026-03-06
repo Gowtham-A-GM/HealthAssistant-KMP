@@ -1,9 +1,11 @@
 package com.example.healthassistant.presentation.auth.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.healthassistant.presentation.auth.model.QuestionUiModel
 
@@ -11,29 +13,55 @@ import com.example.healthassistant.presentation.auth.model.QuestionUiModel
 @Composable
 fun QuestionInput(
     question: QuestionUiModel,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    isRequiredError: Boolean
 ) {
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-
-        Text(
-            text = question.questionText,
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
 
         when (question.type) {
 
-            "text", "number" -> {
+            // -----------------------
+            // TEXT INPUT
+            // -----------------------
+
+            "text" -> {
+
                 OutlinedTextField(
-                    value = question.value,
-                    onValueChange = onValueChange,
-                    modifier = Modifier.fillMaxWidth()
+                    value = question.value ?: "",
+                    onValueChange = { onValueChange(it) },
+                    label = { Text(question.questionText) },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = isRequiredError
                 )
             }
 
+            // -----------------------
+            // NUMBER INPUT
+            // -----------------------
+
+            "number" -> {
+
+                OutlinedTextField(
+                    value = question.value ?: "",
+                    onValueChange = { onValueChange(it) },
+                    label = { Text(question.questionText) },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = isRequiredError
+                )
+            }
+
+            // -----------------------
+            // DROPDOWN INPUT
+            // -----------------------
+
             "single_choice" -> {
+
                 var expanded by remember { mutableStateOf(false) }
 
                 ExposedDropdownMenuBox(
@@ -42,19 +70,23 @@ fun QuestionInput(
                 ) {
 
                     OutlinedTextField(
-                        value = question.value,
+                        value = question.value ?: "",
                         onValueChange = {},
                         readOnly = true,
+                        label = { Text(question.questionText) },
                         modifier = Modifier
                             .menuAnchor()
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
+                        isError = isRequiredError
                     )
 
                     ExposedDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
+
                         question.options.forEach { option ->
+
                             DropdownMenuItem(
                                 text = { Text(option) },
                                 onClick = {
@@ -68,6 +100,21 @@ fun QuestionInput(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // -----------------------
+        // REQUIRED ERROR TEXT
+        // -----------------------
+
+        if (isRequiredError) {
+
+            Spacer(Modifier.height(4.dp))
+
+            Text(
+                text = "Required",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
     }
 }
