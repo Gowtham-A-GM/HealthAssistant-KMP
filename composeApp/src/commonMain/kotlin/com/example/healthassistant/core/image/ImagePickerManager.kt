@@ -10,4 +10,7 @@ expect class ImagePickerManager(
 
     @Composable
     fun RenderGalleryPickerButton()
+
+    @Composable
+    fun rememberGalleryLauncher(): () -> Unit
 }

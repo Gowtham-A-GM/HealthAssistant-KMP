@@ -45,6 +45,8 @@ fun OnboardingProfileScreen(
         viewModel.updateProfileImage(base64)
     }
 
+    val openGallery = imagePicker.rememberGalleryLauncher()
+
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
             onProfileCompleted()
@@ -123,7 +125,10 @@ fun OnboardingProfileScreen(
                             width = 2.dp,
                             color = MaterialTheme.colorScheme.outline,
                             shape = CircleShape
-                        ),
+                        )
+                        .clickable {
+                            openGallery()
+                        },
                     contentAlignment = Alignment.Center
                 ) {
 
@@ -147,15 +152,6 @@ fun OnboardingProfileScreen(
                             modifier = Modifier.size(60.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
-                    }
-
-                    // invisible picker button overlay
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .alpha(0f)
-                    ) {
-                        imagePicker.RenderGalleryPickerButton()
                     }
                 }
             }

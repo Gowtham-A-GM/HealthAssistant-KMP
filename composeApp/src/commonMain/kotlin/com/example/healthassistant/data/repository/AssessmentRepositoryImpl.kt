@@ -175,6 +175,7 @@ class AssessmentRepositoryImpl(
         AppLogger.d("REPO", "Bootstrap syncing user data")
 
         val response = bootstrapApi.getBootstrap()
+        AppLogger.logJson("BOOTSTRAP", "FULL RESPONSE", response)
 
         // REPORTS
         reportLocal.clearAll()

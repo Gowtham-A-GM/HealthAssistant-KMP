@@ -100,8 +100,12 @@ actual class ImagePickerManager actual constructor(
         }
     }
 
+    // --------------------------------------------------
+    // GALLERY ONLY (used in onboarding profile)
+    // --------------------------------------------------
+
     @Composable
-    fun RenderGalleryPickerButton() {
+    actual fun RenderGalleryPickerButton() {
 
         val context = LocalContext.current
 
@@ -133,6 +137,36 @@ actual class ImagePickerManager actual constructor(
             shape = RoundedCornerShape(24.dp)
         ) {
             Text("Choose Photo")
+        }
+    }
+
+    @Composable
+    actual fun rememberGalleryLauncher(): () -> Unit {
+
+        val context = LocalContext.current
+
+        val galleryLauncher =
+            rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.GetContent()
+            ) { uri ->
+
+                uri?.let {
+
+                    val inputStream =
+                        context.contentResolver.openInputStream(it)
+
+                    val bytes = inputStream?.readBytes()
+
+                    inputStream?.close()
+
+                    if (bytes != null) {
+                        onImageSelected(bytes, "gallery_image.jpg")
+                    }
+                }
+            }
+
+        return {
+            galleryLauncher.launch("image/*")
         }
     }
 }

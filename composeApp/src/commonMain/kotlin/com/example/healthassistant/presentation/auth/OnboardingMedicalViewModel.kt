@@ -3,16 +3,19 @@ package com.example.healthassistant.presentation.auth
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerDto
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerItemDto
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerRequestDto
+import com.example.healthassistant.domain.repository.AssessmentRepository
 import com.example.healthassistant.domain.repository.ProfileRepository
 import com.example.healthassistant.presentation.auth.questions.MedicalQuestionConfig
 import kotlinx.coroutines.launch
 
 
 class OnboardingMedicalViewModel(
-    private val repository: ProfileRepository
+    private val repository: ProfileRepository,
+    private val assessmentRepository: AssessmentRepository
 ) : ViewModel() {
 
     var state = mutableStateOf(OnboardingMedicalState())
@@ -53,6 +56,14 @@ class OnboardingMedicalViewModel(
                 val response = repository.submitMedical(request)
 
                 if (response.success) {
+
+                    // 🔹 Pull latest user data from server
+                    try {
+                        assessmentRepository.bootstrapSync()
+                    } catch (e: Exception) {
+                        AppLogger.d("ONBOARDING", "Bootstrap failed → ${e.message}")
+                    }
+
                     state.value = state.value.copy(isSuccess = true)
                 } else {
                     state.value = state.value.copy(

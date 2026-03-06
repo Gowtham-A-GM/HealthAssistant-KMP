@@ -178,7 +178,8 @@ fun App(
 
         val onboardingMedicalViewModel = remember(token) {
             OnboardingMedicalViewModel(
-                repository = profileRepository
+                repository = profileRepository,
+                assessmentRepository = repository
             )
         }
 
