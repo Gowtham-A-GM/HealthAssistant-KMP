@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.healthassistant.core.image.ImagePickerManager
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.bodymap.BodyRegionDataProvider
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.ResponseOption
 import com.example.healthassistant.presentation.assessment.components.*
@@ -104,21 +106,87 @@ fun AssessmentScreen(
             // ---------- VISUAL MODE ----------
             if (state.isVisualModeActive) {
 
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) {
+                Box(modifier = Modifier.fillMaxSize()) {
 
-                    AssessmentTopHeader(
-                        onClose = { viewModel.onEvent(AssessmentEvent.CloseVisualMode) }
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
 
-                    BodySelector(
-                        onBodyPartClick = { bodyPart ->
-                            viewModel.onEvent(
-                                AssessmentEvent.BodyPartSelected(bodyPart)
+                        AssessmentTopHeader(
+                            onClose = { showExitDialog = true }
+                        )
+
+                        TextButton(
+                            onClick = { viewModel.onEvent(AssessmentEvent.CloseVisualMode) },
+                            modifier = Modifier.padding(start = 8.dp, top = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = "Switch to manual",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-                    )
+
+                        BodySelector(
+                            selectedRegionId = state.selectedBodyRegionId,
+                            onBodyPartClick = { bodyPart ->
+                                viewModel.onEvent(
+                                    AssessmentEvent.BodyPartSelected(bodyPart)
+                                )
+                            }
+                        )
+                    }
+
+                    // Bottom sheet overlay
+                    if (state.isBottomSheetVisible && state.selectedBodyRegionId != null) {
+                        val regionData = BodyRegionDataProvider.getRegionData(
+                            state.selectedBodyRegionId!!
+                        )
+                        if (regionData != null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Black.copy(alpha = 0.3f))
+                                    .clickable {
+                                        viewModel.onEvent(AssessmentEvent.DismissBottomSheet)
+                                    },
+                                contentAlignment = Alignment.BottomCenter
+                            ) {
+                                Box(
+                                    modifier = Modifier.clickable(
+                                        indication = null,
+                                        interactionSource = remember {
+                                            androidx.compose.foundation.interaction.MutableInteractionSource()
+                                        }
+                                    ) {}
+                                ) {
+                                    BodyPartBottomSheet(
+                                        regionData = regionData,
+                                        isSubmitting = state.isSubmitting,
+                                        onSubmit = { symptomId, symptomLabel ->
+                                            viewModel.onEvent(
+                                                AssessmentEvent.VisualSymptomSelected(
+                                                    bodyPath = state.visualNavigationStack,
+                                                    symptomId = symptomId,
+                                                    symptomLabel = symptomLabel
+                                                )
+                                            )
+                                        },
+                                        onDismiss = {
+                                            viewModel.onEvent(AssessmentEvent.DismissBottomSheet)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
             } else {

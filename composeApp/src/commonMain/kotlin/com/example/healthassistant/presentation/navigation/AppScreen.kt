@@ -12,7 +12,12 @@ sealed class AppScreen {
     object OnboardingMedical : AppScreen()
 
     object Home : AppScreen()
+
     object Settings : AppScreen()
+
+    object EditProfile : AppScreen()
+    object EditMedical : AppScreen()
+
     object Assessment : AppScreen()
 
     object AssessmentReport : AppScreen()

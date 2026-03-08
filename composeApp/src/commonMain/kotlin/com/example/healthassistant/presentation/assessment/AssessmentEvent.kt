@@ -24,6 +24,7 @@ sealed class AssessmentEvent {
     object OpenVisualMode : AssessmentEvent()
     object CloseVisualMode : AssessmentEvent()
     data class BodyPartSelected(val partId: String) : AssessmentEvent()
+    object DismissBottomSheet : AssessmentEvent()
     object VisualBackPressed : AssessmentEvent()
     data class VisualSymptomSelected(
         val bodyPath: List<String>,

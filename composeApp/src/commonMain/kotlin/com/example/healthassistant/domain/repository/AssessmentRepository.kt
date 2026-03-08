@@ -31,6 +31,8 @@ interface AssessmentRepository {
 
     suspend fun bootstrapSync()
 
+    suspend fun clearLocalData()
+
 
 
 }

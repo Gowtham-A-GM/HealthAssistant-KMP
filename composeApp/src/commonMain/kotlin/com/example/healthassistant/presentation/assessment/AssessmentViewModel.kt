@@ -91,7 +91,7 @@ class AssessmentViewModel(
 
             is AssessmentEvent.OptionSelected -> {
                 val question = _state.value.currentQuestion ?: return
-                AppLogger.d("VM", "Option selected: ${event.optionId}")
+                AppLogger.d("VM", "Question Id: ${_state.value.currentQuestion!!.id},  Option selected: ${event.optionId}")
                 if (_state.value.isCompleted) return
 
                 submitSingleChoiceAnswer(question, event.optionId)
@@ -143,22 +143,33 @@ class AssessmentViewModel(
             is AssessmentEvent.CloseVisualMode -> {
                 _state.value = _state.value.copy(
                     isVisualModeActive = false,
-                    visualNavigationStack = emptyList()
+                    visualNavigationStack = emptyList(),
+                    selectedBodyRegionId = null,
+                    isBottomSheetVisible = false
                 )
             }
 
             is AssessmentEvent.BodyPartSelected -> {
                 _state.value = _state.value.copy(
+                    selectedBodyRegionId = event.partId,
+                    isBottomSheetVisible = true,
                     visualNavigationStack =
                         _state.value.visualNavigationStack + event.partId
                 )
             }
 
+            is AssessmentEvent.DismissBottomSheet -> {
+                _state.value = _state.value.copy(
+                    isBottomSheetVisible = false,
+                    selectedBodyRegionId = null
+                )
+            }
+
             AssessmentEvent.VisualBackPressed -> {
-                val stack = _state.value.visualNavigationStack
-                if (stack.isNotEmpty()) {
+                if (_state.value.isBottomSheetVisible) {
                     _state.value = _state.value.copy(
-                        visualNavigationStack = stack.dropLast(1)
+                        isBottomSheetVisible = false,
+                        selectedBodyRegionId = null
                     )
                 } else {
                     _state.value = _state.value.copy(
@@ -177,10 +188,11 @@ class AssessmentViewModel(
 
                     try {
                         val answerDto = AnswerDto(
-                            type = "visual",
-                            selected_option_id = event.symptomId,
-                            selected_option_label = event.symptomLabel
+                            type = question.responseType,
+                            value = event.symptomLabel
                         )
+
+                        AppLogger.d("VM", "q_chief_ailment response → type=${question.responseType}, value=${event.symptomLabel}")
 
                         val session = repository.submitAnswer(
                             question = question,
@@ -192,7 +204,9 @@ class AssessmentViewModel(
                         _state.value = _state.value.copy(
                             isVisualModeActive = false,
                             visualNavigationStack = emptyList(),
-                            isSubmitting = false
+                            isSubmitting = false,
+                            selectedBodyRegionId = null,
+                            isBottomSheetVisible = false
                         )
 
                         if (session == null) {

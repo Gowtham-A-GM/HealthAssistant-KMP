@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.healthassistant.core.auth.TokenManager
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.network.AppConfig
 import com.example.healthassistant.designsystem.HealthAssistantTheme
@@ -54,6 +55,10 @@ import com.example.healthassistant.presentation.home.EmergencyAction
 import com.example.healthassistant.presentation.home.HomeScreen
 import com.example.healthassistant.presentation.home.HomeViewModel
 import com.example.healthassistant.presentation.news.NewsViewModel
+import com.example.healthassistant.presentation.settings.EditMedicalScreen
+import com.example.healthassistant.presentation.settings.EditMedicalViewModel
+import com.example.healthassistant.presentation.settings.EditProfileScreen
+import com.example.healthassistant.presentation.settings.EditProfileViewModel
 import com.example.healthassistant.presentation.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
@@ -69,6 +74,7 @@ fun App(
     HealthAssistantTheme {
 
         var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Login) }
+        val coroutineScope = rememberCoroutineScope()
 
         // ✅ API
         val api = remember {
@@ -169,6 +175,7 @@ fun App(
             ProfileRepositoryImpl(profileApi)
         }
 
+
         val token = authViewModel.state.value.token ?: ""
         val onboardingProfileViewModel = remember {
             OnboardingProfileViewModel(
@@ -180,6 +187,20 @@ fun App(
             OnboardingMedicalViewModel(
                 repository = profileRepository,
                 assessmentRepository = repository
+            )
+        }
+
+        val editProfileViewModel = remember {
+            EditProfileViewModel(
+                local = generalProfileLocal,
+                repository = profileRepository
+            )
+        }
+
+        val editMedicalViewModel = remember {
+            EditMedicalViewModel(
+                local = medicalProfileLocal,
+                repository = profileRepository
             )
         }
 
@@ -294,25 +315,15 @@ fun App(
                         }
                     )
 
-                    AppScreen.Settings -> SettingsScreen(
-                        onBack = {
-                            currentScreen = AppScreen.Home
-                        },
-                        onProfileClick = {
-                            AppLogger.d("SETTINGS", "Profile clicked")
-                        },
-                        onMedicalClick = {
-                            AppLogger.d("SETTINGS", "Medical clicked")
-                        },
-                        onLanguageClick = {
-                            // open language dialog later
-                        },
-                        onLogoutClick = {
-                            currentScreen = AppScreen.Login
-                        }
+                    AppScreen.EditProfile -> EditProfileScreen(
+                        viewModel = editProfileViewModel,
+                        onBack = { currentScreen = AppScreen.Settings }
                     )
 
-
+                    AppScreen.EditMedical -> EditMedicalScreen(
+                        viewModel = editMedicalViewModel,
+                        onBack = { currentScreen = AppScreen.Settings }
+                    )
 
                     AppScreen.Home -> HomeScreen(
                         viewModel = HomeViewModel(
@@ -330,6 +341,24 @@ fun App(
                             AppLogger.d("EMERGENCY", "App.kt received action: $action")
                             AppLogger.d("EMERGENCY", "Using phone number: $emergencyContactNumber")
                             onEmergencyAction(action, emergencyContactNumber)
+                        }
+                    )
+
+                    AppScreen.Settings -> SettingsScreen(
+                        onBack = { currentScreen = AppScreen.Home },
+                        onProfileClick = { currentScreen = AppScreen.EditProfile },
+                        onMedicalClick = { currentScreen = AppScreen.EditMedical },
+                        onLanguageClick = { },
+                        onLogoutClick = {
+
+                            TokenManager.clearToken()
+
+                            coroutineScope.launch {
+
+                                repository.clearLocalData()
+
+                                currentScreen = AppScreen.Login
+                            }
                         }
                     )
 
@@ -420,8 +449,7 @@ fun App(
                 currentScreen != AppScreen.Login &&
                 currentScreen != AppScreen.Signup &&
                 currentScreen != AppScreen.OnboardingProfile &&
-                currentScreen != AppScreen.OnboardingMedical &&
-                currentScreen != AppScreen.Settings
+                currentScreen != AppScreen.OnboardingMedical
             ) {
                 BottomNavBar(
                     selected = currentScreen,

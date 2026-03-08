@@ -1,6 +1,7 @@
 package com.example.healthassistant.data.local.profile
 
 import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
+import com.example.healthassistant.db.GeneralProfile
 
 interface GeneralProfileLocalDataSource {
 
@@ -9,6 +10,8 @@ interface GeneralProfileLocalDataSource {
         questionText: String,
         answerJson: String
     )
+
+    suspend fun getAll(): List<GeneralProfile>
 
     suspend fun clearAll()
 }

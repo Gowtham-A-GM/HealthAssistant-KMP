@@ -108,8 +108,33 @@ class OnboardingMedicalViewModel(
     }
 
     fun onDynamicValueChange(id: String, value: String) {
+
+        val updatedAnswers = state.value.answers.toMutableMap()
+
+        updatedAnswers[id] = value
+
+        // -----------------------------
+        // AUTO HANDLE FOLLOW-UP QUESTIONS
+        // -----------------------------
+
+        if (id == "q_past_conditions" && value == "No") {
+            updatedAnswers["q_condition_details"] = "Not Applicable"
+        }
+
+        if (id == "q_surgeries" && value == "No") {
+            updatedAnswers["q_surgery_details"] = "Not Applicable"
+        }
+
+        if (id == "q_current_medication" && value == "No") {
+            updatedAnswers["q_medication_details"] = "Not Applicable"
+        }
+
+        if (id == "q_allergies" && value == "No") {
+            updatedAnswers["q_allergy_details"] = "Not Applicable"
+        }
+
         state.value = state.value.copy(
-            answers = state.value.answers + (id to value)
+            answers = updatedAnswers
         )
     }
 

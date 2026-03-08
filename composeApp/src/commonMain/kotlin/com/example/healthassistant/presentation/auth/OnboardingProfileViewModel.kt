@@ -168,21 +168,32 @@ class OnboardingProfileViewModel(
             val question = allQuestions.firstOrNull { it.id == id }
                 ?: return@forEach
 
+            val finalValue =
+                if (value.isBlank() && !question.required)
+                    "Not Applicable"
+                else
+                    value
+
             val dto = when (question.type) {
 
                 "text" -> ProfileAnswerDto(
                     type = "text",
-                    value = value
+                    value = finalValue
                 )
 
                 "single_choice" -> ProfileAnswerDto(
                     type = "single_choice",
-                    selected_option_label = value
+                    selected_option_label = finalValue
+                )
+
+                "number" -> ProfileAnswerDto(
+                    type = "number",
+                    number_value = finalValue.toIntOrNull()
                 )
 
                 else -> ProfileAnswerDto(
                     type = question.type,
-                    value = value
+                    value = finalValue
                 )
             }
 

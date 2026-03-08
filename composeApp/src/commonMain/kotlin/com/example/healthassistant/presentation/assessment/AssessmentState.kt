@@ -21,6 +21,8 @@ data class AssessmentState(
     val isVisualModeActive: Boolean = false,
     val visualNavigationStack: List<String> = emptyList(), // body → subpart
     val isSubmitting: Boolean = false,
+    val selectedBodyRegionId: String? = null,
+    val isBottomSheetVisible: Boolean = false,
 
     val isImageQuestion: Boolean = false,
     val selectedImageBytes: ByteArray? = null,

@@ -55,31 +55,35 @@ fun OnboardingMedicalScreen(
             Spacer(Modifier.height(16.dp))
         }
 
+        val answers = state.answers
+
         items(MedicalQuestionConfig.questions) { baseQuestion ->
 
             val currentValue = viewModel.getValueForQuestion(baseQuestion.id)
             val showErrors = state.errorMessage != null
 
+            // -----------------------------
             // CONDITIONAL QUESTIONS
+            // -----------------------------
 
             if (
                 baseQuestion.id == "q_condition_details" &&
-                answers["q_past_conditions"] != "yes"
+                answers["q_past_conditions"] != "Yes"
             ) return@items
 
             if (
                 baseQuestion.id == "q_surgery_details" &&
-                answers["q_surgeries"] != "yes"
+                answers["q_surgeries"] != "Yes"
             ) return@items
 
             if (
                 baseQuestion.id == "q_medication_details" &&
-                answers["q_current_medication"] != "yes"
+                answers["q_current_medication"] != "Yes"
             ) return@items
 
             if (
                 baseQuestion.id == "q_allergy_details" &&
-                answers["q_allergies"] != "yes"
+                answers["q_allergies"] != "Yes"
             ) return@items
 
             QuestionInput(

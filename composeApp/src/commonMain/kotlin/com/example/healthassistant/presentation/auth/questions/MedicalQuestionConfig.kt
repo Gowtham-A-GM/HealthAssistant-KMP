@@ -6,18 +6,19 @@ object MedicalQuestionConfig {
 
     val questions = listOf(
 
-        // -------------------------
+        // -----------------------------
         // MEDICAL HISTORY
-        // -------------------------
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_past_conditions",
             questionText = "Do you have any diagnosed medical conditions?",
             type = "single_choice",
             options = listOf(
-                "yes",
-                "no"
-            )
+                "Yes",
+                "No"
+            ),
+            required = true
         ),
 
         QuestionUiModel(
@@ -27,18 +28,19 @@ object MedicalQuestionConfig {
             required = false
         ),
 
-        // -------------------------
+        // -----------------------------
         // SURGICAL HISTORY
-        // -------------------------
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_surgeries",
             questionText = "Have you undergone any surgical procedures?",
             type = "single_choice",
             options = listOf(
-                "yes",
-                "no"
-            )
+                "Yes",
+                "No"
+            ),
+            required = true
         ),
 
         QuestionUiModel(
@@ -48,36 +50,38 @@ object MedicalQuestionConfig {
             required = false
         ),
 
-        // -------------------------
-        // FAMILY HISTORY
-        // -------------------------
+        // -----------------------------
+        // FAMILY MEDICAL HISTORY
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_family_history",
             questionText = "Is there any significant medical history in your family?",
             type = "single_choice",
             options = listOf(
-                "heart_disease",
-                "diabetes",
-                "hypertension",
-                "cancer",
-                "stroke",
-                "none_known"
-            )
+                "Heart Disease",
+                "Diabetes",
+                "Hypertension",
+                "Cancer",
+                "Stroke",
+                "None Known"
+            ),
+            required = true
         ),
 
-        // -------------------------
-        // MEDICATIONS
-        // -------------------------
+        // -----------------------------
+        // CURRENT MEDICATIONS
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_current_medication",
-            questionText = "Are you currently taking any medications or supplements?",
+            questionText = "Are you currently taking any medications or health supplements?",
             type = "single_choice",
             options = listOf(
-                "yes",
-                "no"
-            )
+                "Yes",
+                "No"
+            ),
+            required = true
         ),
 
         QuestionUiModel(
@@ -87,18 +91,19 @@ object MedicalQuestionConfig {
             required = false
         ),
 
-        // -------------------------
+        // -----------------------------
         // ALLERGIES
-        // -------------------------
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_allergies",
             questionText = "Do you have any known allergies?",
             type = "single_choice",
             options = listOf(
-                "yes",
-                "no"
-            )
+                "Yes",
+                "No"
+            ),
+            required = true
         ),
 
         QuestionUiModel(
@@ -108,19 +113,20 @@ object MedicalQuestionConfig {
             required = false
         ),
 
-        // -------------------------
-        // LIFESTYLE
-        // -------------------------
+        // -----------------------------
+        // LIFESTYLE HABITS
+        // -----------------------------
 
         QuestionUiModel(
             id = "q_smoking",
             questionText = "What best describes your smoking status?",
             type = "single_choice",
             options = listOf(
-                "never_smoked",
-                "former_smoker",
-                "current_smoker"
-            )
+                "Never Smoked",
+                "Former Smoker",
+                "Current Smoker"
+            ),
+            required = true
         ),
 
         QuestionUiModel(
@@ -128,11 +134,12 @@ object MedicalQuestionConfig {
             questionText = "How often do you consume alcoholic beverages?",
             type = "single_choice",
             options = listOf(
-                "never",
-                "occasionally",
-                "socially",
-                "regularly"
-            )
+                "Never",
+                "Occasionally",
+                "Socially",
+                "Regularly"
+            ),
+            required = true
         )
     )
 }

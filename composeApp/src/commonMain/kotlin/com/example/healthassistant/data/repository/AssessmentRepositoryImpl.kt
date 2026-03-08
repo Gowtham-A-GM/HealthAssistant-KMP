@@ -22,6 +22,7 @@ import com.example.healthassistant.domain.model.assessment.Question
 import com.example.healthassistant.domain.model.assessment.Report
 import com.example.healthassistant.domain.repository.AssessmentRepository
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class AssessmentRepositoryImpl(
     private val api: AssessmentApi,
@@ -176,6 +177,8 @@ class AssessmentRepositoryImpl(
 
         val response = bootstrapApi.getBootstrap()
         AppLogger.logJson("BOOTSTRAP", "FULL RESPONSE", response)
+        AppLogger.d("BOOTSTRAP", "Profile count → ${response.profile.size}")
+        AppLogger.d("BOOTSTRAP", "Medical count → ${response.medical.size}")
 
         // REPORTS
         reportLocal.clearAll()
@@ -191,10 +194,17 @@ class AssessmentRepositoryImpl(
 
         response.profile.forEach {
 
+            val json = Json.encodeToString(it.answer_json)
+
+            AppLogger.d(
+                "BOOTSTRAP_PROFILE_INSERT",
+                "${it.question_id} → $json"
+            )
+
             generalProfileLocal.insert(
                 questionId = it.question_id,
                 questionText = it.question_text,
-                answerJson = it.answer_json.toString()
+                answerJson = json
             )
         }
 
@@ -205,10 +215,17 @@ class AssessmentRepositoryImpl(
 
         response.medical.forEach {
 
+            val json = Json.encodeToString(it.answer_json)
+
+            AppLogger.d(
+                "BOOTSTRAP_MEDICAL_INSERT",
+                "${it.question_id} → $json"
+            )
+
             medicalProfileLocal.insert(
                 questionId = it.question_id,
                 questionText = it.question_text,
-                answerJson = it.answer_json.toString()
+                answerJson = json
             )
         }
 
@@ -229,6 +246,15 @@ class AssessmentRepositoryImpl(
         )
 
         return bytes.copyOf(newSize)
+    }
+
+    override suspend fun clearLocalData() {
+
+        reportLocal.clearAll()
+
+        generalProfileLocal.clearAll()
+
+        medicalProfileLocal.clearAll()
     }
 
 }

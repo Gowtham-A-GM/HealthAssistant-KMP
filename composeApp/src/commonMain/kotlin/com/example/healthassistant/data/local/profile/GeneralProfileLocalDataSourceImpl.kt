@@ -1,5 +1,6 @@
 package com.example.healthassistant.data.local.profile
 
+import com.example.healthassistant.db.GeneralProfile
 import com.example.healthassistant.db.HealthDatabase
 
 class GeneralProfileLocalDataSourceImpl(
@@ -17,6 +18,13 @@ class GeneralProfileLocalDataSourceImpl(
             question_text = questionText,
             answer_json = answerJson
         )
+    }
+
+    override suspend fun getAll(): List<GeneralProfile> {
+
+        return database.generalProfileQueries
+            .getAll()
+            .executeAsList()
     }
 
     override suspend fun clearAll() {
