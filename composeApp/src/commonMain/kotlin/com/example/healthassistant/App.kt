@@ -209,7 +209,8 @@ fun App(
             AssessmentViewModel(
                 repository = repository,
                 speechToTextManager = speechToTextManager,
-                ttsManager = ttsManager
+                ttsManager = ttsManager,
+                firebaseVitalsRepository = com.example.healthassistant.data.remote.firebase.FirebaseVitalsRepositoryImpl()
             )
         }
 

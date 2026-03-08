@@ -1,5 +1,7 @@
 package com.example.healthassistant.presentation.assessment
 
+enum class VitalsField { HEART_RATE, SPO2, TEMPERATURE }
+
 sealed class AssessmentEvent {
 
     object MyselfSelected : AssessmentEvent()
@@ -18,6 +20,11 @@ sealed class AssessmentEvent {
     data class SpeechRecognized(val text: String) : AssessmentEvent()
     object VolumeClicked : AssessmentEvent()
 
+
+    object SkipQuestion : AssessmentEvent()
+    object RealtimeDataClicked : AssessmentEvent()
+    data class VitalsFieldChanged(val field: VitalsField, val value: String) : AssessmentEvent()
+    object ConfirmRealtimeVitals : AssessmentEvent()
 
     object ExitClicked : AssessmentEvent()
 

@@ -34,7 +34,9 @@ fun DesktopApp() {
         val viewModel = remember {
             AssessmentViewModel(
                 repository = repository,
-                speechToTextManager = speechToTextManager
+                speechToTextManager = speechToTextManager,
+                ttsManager = com.example.healthassistant.core.tts.TextToSpeechManager(),
+                firebaseVitalsRepository = com.example.healthassistant.data.remote.firebase.FirebaseVitalsRepositoryImpl()
             )
         }
 

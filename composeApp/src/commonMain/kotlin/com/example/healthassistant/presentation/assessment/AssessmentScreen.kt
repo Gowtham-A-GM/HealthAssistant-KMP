@@ -3,6 +3,11 @@ package com.example.healthassistant.presentation.assessment
 
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -37,6 +42,14 @@ fun AssessmentScreen(
 
     var showExitDialog by remember { mutableStateOf(false) }
     var showLoading by remember { mutableStateOf(false) }
+    var showSkipBanner by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showSkipBanner) {
+        if (showSkipBanner) {
+            kotlinx.coroutines.delay(1500)
+            showSkipBanner = false
+        }
+    }
 
     LaunchedEffect(state.report) {
         if (state.report != null) {
@@ -340,9 +353,132 @@ fun AssessmentScreen(
                     onVolumeClick = {
                         viewModel.onEvent(AssessmentEvent.VolumeClicked)
                     },
+                    onSkip = {
+                        showSkipBanner = true
+                        viewModel.onEvent(AssessmentEvent.SkipQuestion)
+                    },
+                    onRealtimeData = {
+                        viewModel.onEvent(AssessmentEvent.RealtimeDataClicked)
+                    },
                     onExit = { showExitDialog = true },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
+
+                // Realtime Data Overlay
+                AnimatedVisibility(
+                    visible = state.showRealtimeOverlay,
+                    enter = fadeIn(tween(280)) + scaleIn(tween(280), initialScale = 0.88f),
+                    exit = fadeOut(tween(220)) + scaleOut(tween(220), targetScale = 0.88f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .clickable { /* consume — don't dismiss on card tap */ },
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Text(
+                                    text = "Live Vitals",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = Color(0xFF1C4D8D)
+                                )
+
+                                if (state.isLoadingVitals) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(100.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(color = Color(0xFF1C4D8D))
+                                    }
+                                } else {
+                                    // Heart Rate
+                                    OutlinedTextField(
+                                        value = state.vitalsHeartRate,
+                                        onValueChange = {
+                                            viewModel.onEvent(
+                                                AssessmentEvent.VitalsFieldChanged(
+                                                    VitalsField.HEART_RATE, it
+                                                )
+                                            )
+                                        },
+                                        label = { Text("Heart Rate (bpm)") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true,
+                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                                        )
+                                    )
+
+                                    // SpO2
+                                    OutlinedTextField(
+                                        value = state.vitalsSpO2,
+                                        onValueChange = {
+                                            viewModel.onEvent(
+                                                AssessmentEvent.VitalsFieldChanged(
+                                                    VitalsField.SPO2, it
+                                                )
+                                            )
+                                        },
+                                        label = { Text("SpO₂ (%)") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true,
+                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                                        )
+                                    )
+
+                                    // Temperature
+                                    OutlinedTextField(
+                                        value = state.vitalsTemperature,
+                                        onValueChange = {
+                                            viewModel.onEvent(
+                                                AssessmentEvent.VitalsFieldChanged(
+                                                    VitalsField.TEMPERATURE, it
+                                                )
+                                            )
+                                        },
+                                        label = { Text("Temperature (°C)") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true,
+                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                                        )
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        viewModel.onEvent(AssessmentEvent.ConfirmRealtimeVitals)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp),
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF1C4D8D)
+                                    )
+                                ) {
+                                    Text("Confirm", color = Color.White)
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             AnimatedVisibility(visible = showLoading) {
@@ -366,6 +502,30 @@ fun AssessmentScreen(
                                     t("Preparing next question...")
                         )
                     }
+                }
+            }
+
+            // Skip banner — immediate feedback, auto-dismisses after 1.5s
+            AnimatedVisibility(
+                visible = showSkipBanner,
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically { -it },
+                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically { -it },
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 24.dp)
+                        .background(
+                            color = Color(0xFF1C4D8D),
+                            shape = RoundedCornerShape(50.dp)
+                        )
+                        .padding(horizontal = 24.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = "Question Skipped",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }

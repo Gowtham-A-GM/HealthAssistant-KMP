@@ -28,6 +28,13 @@ data class AssessmentState(
     val selectedImageBytes: ByteArray? = null,
     val selectedImageFileName: String? = null,
 
+    val showRealtimeOverlay: Boolean = false,
+    val isSkipping: Boolean = false,
 
+    // REALTIME VITALS
+    val isLoadingVitals: Boolean = false,
+    val vitalsHeartRate: String = "",
+    val vitalsSpO2: String = "",
+    val vitalsTemperature: String = "",
 )
 

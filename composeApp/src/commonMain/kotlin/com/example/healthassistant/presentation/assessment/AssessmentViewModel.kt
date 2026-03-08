@@ -7,6 +7,7 @@ import com.example.healthassistant.core.stt.SpeechToTextManager
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.tts.TextToSpeechManager
 import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
+import com.example.healthassistant.data.remote.firebase.FirebaseVitalsRepository
 import com.example.healthassistant.domain.model.assessment.Question
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,8 @@ import kotlinx.coroutines.launch
 class AssessmentViewModel(
     private val repository: AssessmentRepository,
     private val speechToTextManager: SpeechToTextManager,
-    private val ttsManager: TextToSpeechManager
+    private val ttsManager: TextToSpeechManager,
+    private val firebaseVitalsRepository: FirebaseVitalsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AssessmentState(isLoading = true))
@@ -226,6 +228,55 @@ class AssessmentViewModel(
             }
 
 
+            is AssessmentEvent.RealtimeDataClicked -> {
+                _state.value = _state.value.copy(
+                    showRealtimeOverlay = true,
+                    isLoadingVitals = true,
+                    vitalsHeartRate = "",
+                    vitalsSpO2 = "",
+                    vitalsTemperature = ""
+                )
+                viewModelScope.launch {
+                    try {
+                        val dto = firebaseVitalsRepository.fetchLatestVitals()
+                        _state.value = _state.value.copy(
+                            isLoadingVitals = false,
+                            vitalsHeartRate = dto.heartRate?.let {
+                                if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString()
+                            } ?: "",
+                            vitalsSpO2 = dto.spo2?.let {
+                                if (it == it.toLong().toDouble()) it.toLong().toString() else it.toString()
+                            } ?: "",
+                            vitalsTemperature = dto.temperature?.toString() ?: ""
+                        )
+                    } catch (e: Exception) {
+                        AppLogger.d("VM", "Firebase vitals fetch error: ${e.message}")
+                        _state.value = _state.value.copy(
+                            isLoadingVitals = false,
+                            errorMessage = "Failed to fetch vitals"
+                        )
+                    }
+                }
+            }
+
+            is AssessmentEvent.VitalsFieldChanged -> {
+                _state.value = when (event.field) {
+                    VitalsField.HEART_RATE -> _state.value.copy(vitalsHeartRate = event.value)
+                    VitalsField.SPO2 -> _state.value.copy(vitalsSpO2 = event.value)
+                    VitalsField.TEMPERATURE -> _state.value.copy(vitalsTemperature = event.value)
+                }
+            }
+
+            is AssessmentEvent.ConfirmRealtimeVitals -> {
+                _state.value = _state.value.copy(showRealtimeOverlay = false)
+            }
+
+            is AssessmentEvent.SkipQuestion -> {
+                val question = _state.value.currentQuestion ?: return
+                if (_state.value.isLoading) return
+                submitSkipAnswer(question)
+            }
+
             AssessmentEvent.ExitClicked -> {
                 AppLogger.d("VM", "Exit clicked")
             }
@@ -337,6 +388,43 @@ class AssessmentViewModel(
         }
     }
 
+
+    private fun submitSkipAnswer(question: Question) {
+        ttsManager.stop()
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true, isSkipping = true)
+            try {
+                val answerDto = AnswerDto(
+                    type = question.responseType,
+                    value = "skipped"
+                )
+                AppLogger.d("VM", "SKIP → question=${question.id}, type=${question.responseType}")
+                val session = repository.submitAnswer(
+                    question = question,
+                    answer = answerDto,
+                    imageBytes = null,
+                    imageFileName = null
+                )
+                if (session == null) {
+                    _state.value = _state.value.copy(
+                        isGeneratingReport = true,
+                        isSkipping = false,
+                        currentQuestion = null
+                    )
+                    generateReport()
+                    return@launch
+                }
+                _state.value = _state.value.copy(isSkipping = false)
+                handleIncomingQuestion(session.question)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    isSkipping = false,
+                    errorMessage = "Failed to skip question"
+                )
+            }
+        }
+    }
 
     private fun speakQuestionIfNeeded(question: Question) {
 
