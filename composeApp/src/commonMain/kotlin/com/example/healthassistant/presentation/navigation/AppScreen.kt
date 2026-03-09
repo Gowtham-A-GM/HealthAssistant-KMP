@@ -17,6 +17,7 @@ sealed class AppScreen {
 
     object EditProfile : AppScreen()
     object EditMedical : AppScreen()
+    object Language : AppScreen()
 
     object Assessment : AppScreen()
 

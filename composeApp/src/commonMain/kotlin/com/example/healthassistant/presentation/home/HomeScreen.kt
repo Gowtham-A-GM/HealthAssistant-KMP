@@ -1,18 +1,10 @@
 package com.example.healthassistant.presentation.home
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.healthassistant.core.logger.AppLogger
-import com.example.healthassistant.core.utils.LanguageState
-import com.example.healthassistant.core.utils.platformInitTranslator
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.presentation.home.components.CareTipBottomSheet
 import com.example.healthassistant.presentation.home.components.EmergencyBottomSheetWrapper
@@ -29,9 +21,6 @@ fun HomeScreen(
     var showConfirmationDialog by remember { mutableStateOf(false) }
 
     var pendingEmergencyAction by remember { mutableStateOf<EmergencyAction?>(null) }
-
-    var showLanguageDialog by remember { mutableStateOf(false) }
-
 
     HomeContent(
         state = state,
@@ -133,58 +122,6 @@ fun HomeScreen(
             text = {
                 Text(t("Are you sure you want to proceed?"))
             }
-        )
-    }
-
-    if (showLanguageDialog) {
-
-        AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
-
-            title = { Text(t("Select Language")) },
-
-            text = {
-                Column {
-
-                    Text(
-                        text = t("English"),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                LanguageState.currentLanguage.value = "en"
-                                platformInitTranslator("en")
-                                showLanguageDialog = false
-                            }
-                            .padding(12.dp)
-                    )
-
-                    Text(
-                        text = t("Tamil"),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                LanguageState.currentLanguage.value = "ta"
-                                platformInitTranslator("ta")
-                                showLanguageDialog = false
-                            }
-                            .padding(12.dp)
-                    )
-
-                    Text(
-                        text = t("Hindi"),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                LanguageState.currentLanguage.value = "hi"
-                                platformInitTranslator("hi")
-                                showLanguageDialog = false
-                            }
-                            .padding(12.dp)
-                    )
-                }
-            },
-
-            confirmButton = {}
         )
     }
 

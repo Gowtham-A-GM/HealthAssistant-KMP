@@ -55,10 +55,14 @@ import com.example.healthassistant.presentation.home.EmergencyAction
 import com.example.healthassistant.presentation.home.HomeScreen
 import com.example.healthassistant.presentation.home.HomeViewModel
 import com.example.healthassistant.presentation.news.NewsViewModel
+import com.example.healthassistant.core.utils.LanguageState
+import com.example.healthassistant.core.utils.loadLanguagePref
+import com.example.healthassistant.core.utils.platformInitTranslator
 import com.example.healthassistant.presentation.settings.EditMedicalScreen
 import com.example.healthassistant.presentation.settings.EditMedicalViewModel
 import com.example.healthassistant.presentation.settings.EditProfileScreen
 import com.example.healthassistant.presentation.settings.EditProfileViewModel
+import com.example.healthassistant.presentation.settings.LanguagePickerScreen
 import com.example.healthassistant.presentation.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
@@ -76,6 +80,15 @@ fun App(
 
         var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Login) }
         val coroutineScope = rememberCoroutineScope()
+
+        // ── Restore saved language on first composition ──
+        LaunchedEffect(Unit) {
+            val saved = loadLanguagePref()
+            if (saved != "en") {
+                platformInitTranslator(saved)
+                LanguageState.currentLanguage.value = saved
+            }
+        }
 
         // ✅ API
         val api = remember {
@@ -287,6 +300,9 @@ fun App(
                 AppScreen.News ->
                     AppScreen.Home
 
+                AppScreen.Language ->
+                    AppScreen.Settings
+
                 AppScreen.Home ->
                     AppScreen.Home
 
@@ -351,6 +367,10 @@ fun App(
                         onBack = { currentScreen = AppScreen.Settings }
                     )
 
+                    AppScreen.Language -> LanguagePickerScreen(
+                        onBack = { currentScreen = AppScreen.Settings }
+                    )
+
                     AppScreen.Home -> HomeScreen(
                         viewModel = homeViewModel,
                         onEmergencyAction = { action ->
@@ -371,7 +391,7 @@ fun App(
                             editMedicalViewModel.resetForReopen()
                             currentScreen = AppScreen.EditMedical
                         },
-                        onLanguageClick = { },
+                        onLanguageClick = { currentScreen = AppScreen.Language },
                         onLogoutClick = {
 
                             TokenManager.clearToken()
@@ -491,7 +511,8 @@ fun App(
                 currentScreen != AppScreen.Login &&
                 currentScreen != AppScreen.Signup &&
                 currentScreen != AppScreen.OnboardingProfile &&
-                currentScreen != AppScreen.OnboardingMedical
+                currentScreen != AppScreen.OnboardingMedical &&
+                currentScreen != AppScreen.Language
             ) {
                 BottomNavBar(
                     selected = currentScreen,

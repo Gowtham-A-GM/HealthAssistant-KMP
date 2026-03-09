@@ -9,10 +9,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
+import com.example.healthassistant.core.utils.LanguageState
 import com.example.healthassistant.core.utils.t
 
 data class SettingsItem(
-    val title: String
+    val title: String,
+    val subtitle: String = ""
 )
 
 @Composable
@@ -24,10 +28,12 @@ fun SettingsScreen(
     onLogoutClick: () -> Unit
 ) {
 
+    val currentLang = LanguageState.currentLanguageName()
+
     val items = listOf(
         SettingsItem("Profile Data"),
         SettingsItem("Medical Data"),
-        SettingsItem("Language"),
+        SettingsItem("Language", currentLang),
         SettingsItem("Logout")
     )
 
@@ -64,7 +70,16 @@ fun SettingsScreen(
                         }
                         .padding(vertical = 16.dp)
                 ) {
-                    Text(text = t(item.title))
+                    Column {
+                        Text(text = t(item.title))
+                        if (item.subtitle.isNotEmpty()) {
+                            Text(
+                                text = item.subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
+                    }
                 }
 
                 Divider()

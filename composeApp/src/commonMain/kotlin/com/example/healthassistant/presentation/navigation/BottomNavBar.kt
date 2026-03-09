@@ -28,6 +28,7 @@ import healthassistant.composeapp.generated.resources.ic_home
 import healthassistant.composeapp.generated.resources.ic_news
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import com.example.healthassistant.core.utils.t
 
 @Composable
 fun BottomNavBar(
@@ -67,21 +68,21 @@ fun BottomNavBar(
 
             BottomNavItem(
                 icon = Res.drawable.ic_home,
-                label = "Home",
+                label = t("Home"),
                 selected = selected == AppScreen.Home,
                 onClick = onHomeClick
             )
 
             BottomNavItem(
                 icon = Res.drawable.ic_history,
-                label = "History",
+                label = t("History"),
                 selected = selected == AppScreen.History,
                 onClick = onHistoryClick
             )
 
             BottomNavItem(
                 icon = Res.drawable.ic_news,
-                label = "News",
+                label = t("News"),
                 selected = selected == AppScreen.News,
                 onClick = onNewsClick
             )
