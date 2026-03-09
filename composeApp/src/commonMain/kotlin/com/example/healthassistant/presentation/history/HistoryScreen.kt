@@ -1,87 +1,71 @@
-package com.example.healthassistant.presentation.history
+﻿package com.example.healthassistant.presentation.history
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.statusBarsPadding
+import com.example.healthassistant.domain.model.assessment.Report
 
 @Composable
 fun HistoryScreen(
-    onItemClick: () -> Unit
+    reports: List<Report>,
+    onItemClick: (Report) -> Unit
 ) {
-
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
+        modifier = Modifier.fillMaxSize().statusBarsPadding()
             .background(MaterialTheme.colorScheme.background)
     ) {
-
-        // ───── Header ─────
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "History",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
             )
         }
+        HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.primary)
 
-        Divider(
-            thickness = 2.dp,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        // ───── Content ─────
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-
-            // Vertical timeline line
-            Box(
-                modifier = Modifier
-                    .width(2.dp)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                HistoryItem(
-                    date = "17 January 2026",
-                    title = "Stomach Pain",
-                    time = "04:25 PM",
-                    status = HistoryStatus.DOCTOR_VISIT,
-                    onClick = onItemClick
+        if (reports.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "No assessment reports yet",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                 )
-
-                HistoryItem(
-                    date = "27 December 2025",
-                    title = "Head Pain",
-                    time = "11:55 AM",
-                    status = HistoryStatus.SELF_CARE,
-                    onClick = onItemClick
+            }
+        } else {
+            Row(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                Box(
+                    modifier = Modifier.width(2.dp).fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.primary)
                 )
-
-                HistoryItem(
-                    date = "17 December 2025",
-                    title = "Heart Issue",
-                    time = "02:37 PM",
-                    status = HistoryStatus.EMERGENCY,
-                    onClick = onItemClick
-                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Spacer(Modifier.height(4.dp))
+                    reports.forEach { report ->
+                        val (dateStr, timeStr) = formatReportDateTime(report.generatedAt)
+                        HistoryItem(
+                            date = dateStr,
+                            title = report.topic,
+                            time = timeStr,
+                            status = urgencyToHistoryStatus(report.urgencyLevel),
+                            onClick = { onItemClick(report) }
+                        )
+                    }
+                    Spacer(Modifier.height(24.dp))
+                }
             }
         }
     }

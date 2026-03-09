@@ -1,4 +1,4 @@
-package com.example.healthassistant.presentation.navigation
+﻿package com.example.healthassistant.presentation.navigation
 
 import com.example.healthassistant.domain.model.assessment.PossibleCause
 
@@ -29,10 +29,8 @@ sealed class AppScreen {
     object History : AppScreen()
     object News : AppScreen()
 
-//    object AssessmentStart : AppScreen()
-
-    object HistoryDetail : AppScreen()
-    data class CauseDetail(val title: String) : AppScreen()
+    data class HistoryDetail(val reportId: String) : AppScreen()
+    data class CauseDetail(val cause: PossibleCause) : AppScreen()
 
     data class Chat(val reportId: String?) : AppScreen()
 }

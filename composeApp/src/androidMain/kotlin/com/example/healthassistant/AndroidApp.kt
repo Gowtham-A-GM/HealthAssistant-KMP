@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import com.example.healthassistant.core.emergency.EmergencyManager
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.core.pdf.generateAndSavePdf
 import com.example.healthassistant.core.utils.appContext
 import com.example.healthassistant.db.HealthDatabase
 import com.example.healthassistant.presentation.home.EmergencyAction
@@ -119,7 +120,6 @@ fun AndroidApp(database: HealthDatabase) {
         }
 
 
-        // 👇 CALL SHARED APP (THIS IS THE KEY)
         App(
             speechToTextManager = speechToTextManager,
             ttsManager = ttsManager,
@@ -146,6 +146,15 @@ fun AndroidApp(database: HealthDatabase) {
                 }
 
                 emergencyManager.handleAction(action, phoneNumber)
+            },
+            onDownloadPdf = { report ->
+                try {
+                    val message = generateAndSavePdf(context, report)
+                    android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    AppLogger.d("PDF", "Failed: ${e.message}")
+                    android.widget.Toast.makeText(context, "Failed to generate PDF", android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         )
 

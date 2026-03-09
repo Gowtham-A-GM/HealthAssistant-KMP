@@ -79,7 +79,17 @@ fun AssessmentCauseDetailScreen(
 
             Text(
                 text = t(cause.detail.commonDescription),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = { cause.detail.percentage / 100f },
+                modifier = Modifier.fillMaxWidth().height(6.dp),
+                color = when (cause.severity) {
+                    "severe" -> Color.Red
+                    "moderate" -> Color(0xFFFFA000)
+                    else -> MaterialTheme.colorScheme.primary
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))

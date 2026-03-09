@@ -20,6 +20,7 @@ import com.example.healthassistant.data.remote.bootstrap.BootstrapApi
 import com.example.healthassistant.domain.model.assessment.AssessmentSession
 import com.example.healthassistant.domain.model.assessment.Question
 import com.example.healthassistant.domain.model.assessment.Report
+import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerDto
 import com.example.healthassistant.domain.repository.AssessmentRepository
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -125,10 +126,14 @@ class AssessmentRepositoryImpl(
         val reportDto = api.submitReport(request)
 
         val report = reportDto.toDomain()
+        val finalReport = if (report.patientInfo != null && report.patientInfo.age == 0) {
+            val age = getAgeFromLocalProfile()
+            if (age > 0) report.copy(patientInfo = report.patientInfo.copy(age = age)) else report
+        } else report
 
-        reportLocal.insert(report)
+        reportLocal.insert(finalReport)
 
-        return report
+        return finalReport
     }
     override suspend fun getStoredAnswer(questionId: String): AnswerDto? {
         return storedAnswersMap[questionId]
@@ -164,8 +169,14 @@ class AssessmentRepositoryImpl(
 
         reportLocal.clearAll()
 
+        val syncAge = getAgeFromLocalProfile()
         reports
-            .map { it.toDomain() }
+            .map { dto ->
+                val r = dto.toDomain()
+                if (r.patientInfo != null && r.patientInfo.age == 0 && syncAge > 0)
+                    r.copy(patientInfo = r.patientInfo.copy(age = syncAge))
+                else r
+            }
             .forEach { reportLocal.insert(it) }
 
         AppLogger.d("REPO", "Reports synced → ${reports.size}")
@@ -180,11 +191,25 @@ class AssessmentRepositoryImpl(
         AppLogger.d("BOOTSTRAP", "Profile count → ${response.profile.size}")
         AppLogger.d("BOOTSTRAP", "Medical count → ${response.medical.size}")
 
+        // Extract age from bootstrap profile before it's stored locally
+        val bootstrapAge = try {
+            response.profile.firstOrNull { it.question_id == "q_age" }?.let {
+                val jsonStr = Json.encodeToString(it.answer_json)
+                val dto = Json { ignoreUnknownKeys = true }.decodeFromString<ProfileAnswerDto>(jsonStr)
+                dto.number_value ?: dto.value?.toIntOrNull() ?: 0
+            } ?: 0
+        } catch (e: Exception) { 0 }
+
         // REPORTS
         reportLocal.clearAll()
 
         response.reports
-            .map { it.toDomain() }
+            .map { dto ->
+                val r = dto.toDomain()
+                if (r.patientInfo != null && r.patientInfo.age == 0 && bootstrapAge > 0)
+                    r.copy(patientInfo = r.patientInfo.copy(age = bootstrapAge))
+                else r
+            }
             .forEach { reportLocal.insert(it) }
 
         AppLogger.d("REPO", "Reports synced → ${response.reports.size}")
@@ -230,6 +255,14 @@ class AssessmentRepositoryImpl(
         }
 
         AppLogger.d("REPO", "Medical answers synced → ${response.medical.size}")
+    }
+
+    private suspend fun getAgeFromLocalProfile(): Int {
+        return try {
+            val ageEntry = generalProfileLocal.getAll().firstOrNull { it.question_id == "q_age" } ?: return 0
+            val dto = Json { ignoreUnknownKeys = true }.decodeFromString<ProfileAnswerDto>(ageEntry.answer_json)
+            dto.number_value ?: dto.value?.toIntOrNull() ?: 0
+        } catch (e: Exception) { 0 }
     }
 
     private fun compressImageBytes(bytes: ByteArray): ByteArray {

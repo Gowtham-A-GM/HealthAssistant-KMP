@@ -81,6 +81,12 @@ fun HistoryItem(
     }
 }
 
+fun urgencyToHistoryStatus(urgencyLevel: String): HistoryStatus = when (urgencyLevel) {
+    "emergency", "red_emergency" -> HistoryStatus.EMERGENCY
+    "yellow_doctor_visit", "doctor_visit_recommended" -> HistoryStatus.DOCTOR_VISIT
+    else -> HistoryStatus.SELF_CARE
+}
+
 @Composable
 fun StatusBadge(status: HistoryStatus) {
 

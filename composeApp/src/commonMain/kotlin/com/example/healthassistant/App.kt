@@ -68,7 +68,8 @@ fun App(
     ttsManager: TextToSpeechManager,
     database: HealthDatabase,
     newsApiKey: String,
-    onEmergencyAction: (EmergencyAction, String?) -> Unit
+    onEmergencyAction: (EmergencyAction, String?) -> Unit,
+    onDownloadPdf: (com.example.healthassistant.domain.model.assessment.Report) -> Unit = {}
 ) {
 
     HealthAssistantTheme {
@@ -231,6 +232,18 @@ fun App(
             NewsViewModel(newsRepository)
         }
 
+        val historyViewModel = remember {
+            com.example.healthassistant.presentation.history.HistoryViewModel(reportLocal)
+        }
+
+        var currentHistoryReport by remember {
+            mutableStateOf<com.example.healthassistant.domain.model.assessment.Report?>(null)
+        }
+
+        androidx.compose.runtime.LaunchedEffect(currentScreen) {
+            if (currentScreen == AppScreen.History) historyViewModel.loadReports()
+        }
+
         PlatformBackHandler {
 
             currentScreen = when (currentScreen) {
@@ -252,9 +265,9 @@ fun App(
                     AppScreen.Home
 
                 is AppScreen.CauseDetail ->
-                    AppScreen.HistoryDetail
+                    currentHistoryReport?.let { AppScreen.HistoryDetail(it.reportId) } ?: AppScreen.History
 
-                AppScreen.HistoryDetail ->
+                is AppScreen.HistoryDetail ->
                     AppScreen.History
 
                 AppScreen.History ->
@@ -393,7 +406,8 @@ fun App(
                                     assessmentViewModel.endAssessment {
                                         currentScreen = AppScreen.Chat(reportId = report.reportId)
                                     }
-                                }
+                                },
+                                onDownloadPdf = onDownloadPdf
                             )
 
 
@@ -419,27 +433,41 @@ fun App(
 
 
 
-                    AppScreen.History -> HistoryScreen(
-                        onItemClick = {
-                            currentScreen = AppScreen.HistoryDetail
-                        }
-                    )
+                    AppScreen.History -> {
+                        val reports by historyViewModel.reports.collectAsState()
+                        com.example.healthassistant.presentation.history.HistoryScreen(
+                            reports = reports,
+                            onItemClick = { report ->
+                                currentHistoryReport = report
+                                currentScreen = AppScreen.HistoryDetail(report.reportId)
+                            }
+                        )
+                    }
 
                     AppScreen.News -> NewsScreen(
                         viewModel = newsViewModel
                     )
 
 
-                    AppScreen.HistoryDetail -> HistoryDetailScreen(
-                        onBack = { currentScreen = AppScreen.History },
-                        onCauseClick = { cause ->
-                            currentScreen = AppScreen.CauseDetail(cause)
+                    is AppScreen.HistoryDetail -> {
+                        currentHistoryReport?.let { report ->
+                            com.example.healthassistant.presentation.history.HistoryDetailScreen(
+                                report = report,
+                                onBack = { currentScreen = AppScreen.History },
+                                onCauseClick = { cause ->
+                                    currentScreen = AppScreen.CauseDetail(cause)
+                                },
+                                onDownloadPdf = onDownloadPdf
+                            )
                         }
-                    )
+                    }
 
-                    is AppScreen.CauseDetail -> CauseDetailScreen(
-                        title = (currentScreen as AppScreen.CauseDetail).title,
-                        onBack = { currentScreen = AppScreen.HistoryDetail }
+                    is AppScreen.CauseDetail -> com.example.healthassistant.presentation.history.CauseDetailScreen(
+                        cause = (currentScreen as AppScreen.CauseDetail).cause,
+                        onBack = {
+                            currentScreen = currentHistoryReport?.let { AppScreen.HistoryDetail(it.reportId) }
+                                ?: AppScreen.History
+                        }
                     )
                 }
             }
