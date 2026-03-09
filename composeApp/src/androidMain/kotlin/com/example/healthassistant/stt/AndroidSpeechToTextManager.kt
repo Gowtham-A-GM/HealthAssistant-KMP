@@ -13,12 +13,31 @@ class AndroidSpeechToTextManager(
     private val context: Context
 ) : SpeechToTextManager {
 
-
-
     private val recognizer: SpeechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(context)
 
     private var listening = false
+    private var currentLanguageTag: String = "en-US"
+
+    override fun setLanguage(languageCode: String) {
+        currentLanguageTag = toAndroidLocaleTag(languageCode)
+    }
+
+    private fun toAndroidLocaleTag(code: String): String = when (code) {
+        "hi" -> "hi-IN"
+        "mr" -> "mr-IN"
+        "ta" -> "ta-IN"
+        "te" -> "te-IN"
+        "ml" -> "ml-IN"
+        "kn" -> "kn-IN"
+        "bn" -> "bn-IN"
+        "ur" -> "ur-IN"
+        "gu" -> "gu-IN"
+        "or" -> "or-IN"
+        "pa" -> "pa-IN"
+        "as" -> "as-IN"
+        else -> "en-US"
+    }
 
     override fun startListening(
         onResult: (String) -> Unit,
@@ -37,8 +56,9 @@ class AndroidSpeechToTextManager(
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             )
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US")
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, currentLanguageTag)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, currentLanguageTag)
+            putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, false)
             putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.packageName)
         }
 

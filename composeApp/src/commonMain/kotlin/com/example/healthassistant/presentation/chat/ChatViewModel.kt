@@ -2,12 +2,16 @@ package com.example.healthassistant.presentation.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.compose.runtime.snapshotFlow
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.stt.SpeechToTextManager
 import com.example.healthassistant.core.tts.TextToSpeechManager
+import com.example.healthassistant.core.utils.LanguageState
+import com.example.healthassistant.core.utils.platformTranslate
 import com.example.healthassistant.domain.repository.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,6 +23,22 @@ class ChatViewModel(
 
     private val _state = MutableStateFlow(ChatState())
     val state: StateFlow<ChatState> = _state
+
+    init {
+        // Apply current language immediately
+        val initialLang = LanguageState.currentLanguage.value
+        speechToTextManager.setLanguage(initialLang)
+        ttsManager.setLanguage(initialLang)
+
+        // Observe language changes and re-apply to STT/TTS
+        viewModelScope.launch {
+            snapshotFlow { LanguageState.currentLanguage.value }
+                .collectLatest { langCode ->
+                    speechToTextManager.setLanguage(langCode)
+                    ttsManager.setLanguage(langCode)
+                }
+        }
+    }
 
     // 🔥 Start Chat
     fun startChat(currentReportId: String? = null) {
@@ -40,7 +60,10 @@ class ChatViewModel(
 
                 // 🔊 Auto speak first message
                 if (_state.value.isTtsEnabled) {
-                    ttsManager.speak(firstMessage.content)
+                    val lang = LanguageState.currentLanguage.value
+                    val textToSpeak = if (lang == "en") firstMessage.content
+                                      else platformTranslate(firstMessage.content)
+                    ttsManager.speak(textToSpeak)
                 }
 
             } catch (e: Exception) {
@@ -115,7 +138,10 @@ class ChatViewModel(
 
                 // 🔊 Speak assistant reply
                 if (_state.value.isTtsEnabled) {
-                    ttsManager.speak(assistantReply.content)
+                    val lang = LanguageState.currentLanguage.value
+                    val textToSpeak = if (lang == "en") assistantReply.content
+                                      else platformTranslate(assistantReply.content)
+                    ttsManager.speak(textToSpeak)
                 }
 
             } catch (e: Exception) {

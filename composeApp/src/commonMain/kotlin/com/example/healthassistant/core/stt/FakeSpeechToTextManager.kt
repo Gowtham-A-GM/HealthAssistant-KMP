@@ -15,4 +15,8 @@ class FakeSpeechToTextManager : SpeechToTextManager {
     }
 
     override fun isListening(): Boolean = false
+
+    override fun setLanguage(languageCode: String) {
+        // no-op for fake
+    }
 }

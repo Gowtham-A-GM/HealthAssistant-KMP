@@ -10,4 +10,6 @@ interface SpeechToTextManager {
     fun stopListening()
 
     fun isListening(): Boolean
+
+    fun setLanguage(languageCode: String)
 }

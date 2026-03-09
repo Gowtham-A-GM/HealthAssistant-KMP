@@ -141,7 +141,7 @@ fun AssessmentScreen(
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
-                                text = "Switch to manual",
+                                text = t("Switch to manual"),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -256,7 +256,7 @@ fun AssessmentScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(24.dp)
                                 ) {
-                                    Text("Submit Image")
+                                    Text(t("Submit Image"))
                                 }
                             }
 
@@ -336,7 +336,7 @@ fun AssessmentScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(24.dp)
                             ) {
-                                Text("Point on the body")
+                                Text(t("Point on the body"))
                             }
                         }
                     }

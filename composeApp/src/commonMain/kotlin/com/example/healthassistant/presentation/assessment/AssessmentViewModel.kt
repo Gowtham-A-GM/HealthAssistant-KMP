@@ -6,12 +6,16 @@ import com.example.healthassistant.domain.repository.AssessmentRepository
 import com.example.healthassistant.core.stt.SpeechToTextManager
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.tts.TextToSpeechManager
+import com.example.healthassistant.core.utils.LanguageState
+import com.example.healthassistant.core.utils.platformTranslate
 import com.example.healthassistant.data.remote.assessment.dto.AnswerDto
 import com.example.healthassistant.data.remote.firebase.FirebaseVitalsRepository
 import com.example.healthassistant.domain.model.assessment.Question
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.collectLatest
 
 class AssessmentViewModel(
     private val repository: AssessmentRepository,
@@ -25,6 +29,21 @@ class AssessmentViewModel(
 
     val voiceAmplitude: Float = 0f  // 0f → 1f
 
+    init {
+        // Apply current language immediately
+        val initialLang = LanguageState.currentLanguage.value
+        speechToTextManager.setLanguage(initialLang)
+        ttsManager.setLanguage(initialLang)
+
+        // Observe language changes and re-apply to STT/TTS
+        viewModelScope.launch {
+            snapshotFlow { LanguageState.currentLanguage.value }
+                .collectLatest { langCode ->
+                    speechToTextManager.setLanguage(langCode)
+                    ttsManager.setLanguage(langCode)
+                }
+        }
+    }
 
     // ✅ START ASSESSMENT
     fun startAssessment() {
@@ -111,7 +130,11 @@ class AssessmentViewModel(
 
 
             is AssessmentEvent.MicClicked -> {
-                startListening()
+                if (_state.value.isListening) {
+                    stopListening()
+                } else {
+                    startListening()
+                }
             }
 
             is AssessmentEvent.StopListening -> {
@@ -130,7 +153,11 @@ class AssessmentViewModel(
                 val newMuteState = !_state.value.isMuted
 
                 if (newMuteState) {
+                    // Muting: stop any ongoing TTS
                     ttsManager.stop()
+                } else {
+                    // Unmuting: speak the current question if available
+                    _state.value.currentQuestion?.let { speakQuestionIfNeeded(it, forceMuted = false) }
                 }
 
                 _state.value = _state.value.copy(
@@ -426,21 +453,27 @@ class AssessmentViewModel(
         }
     }
 
-    private fun speakQuestionIfNeeded(question: Question) {
+    private fun speakQuestionIfNeeded(question: Question, forceMuted: Boolean = _state.value.isMuted) {
 
-        if (_state.value.isMuted) return
+        if (forceMuted) return
 
-        val textBuilder = StringBuilder()
+        viewModelScope.launch {
+            val lang = LanguageState.currentLanguage.value
 
-        textBuilder.append(question.text)
+            suspend fun translate(text: String): String =
+                if (lang == "en") text else platformTranslate(text)
 
-        question.responseOptions?.let { options ->
-            options.forEachIndexed { index, option ->
-                textBuilder.append(". Option ${index + 1}. ${option.label}")
+            val textBuilder = StringBuilder()
+            textBuilder.append(translate(question.text))
+
+            question.responseOptions?.let { options ->
+                options.forEachIndexed { index, option ->
+                    textBuilder.append(". Option ${index + 1}. ${translate(option.label)}")
+                }
             }
-        }
 
-        ttsManager.speak(textBuilder.toString())
+            ttsManager.speak(textBuilder.toString())
+        }
     }
 
 
