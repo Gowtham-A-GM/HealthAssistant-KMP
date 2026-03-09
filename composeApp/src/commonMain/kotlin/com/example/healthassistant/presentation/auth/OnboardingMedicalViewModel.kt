@@ -21,6 +21,10 @@ class OnboardingMedicalViewModel(
     var state = mutableStateOf(OnboardingMedicalState())
         private set
 
+    fun resetState() {
+        state.value = OnboardingMedicalState()
+    }
+
     fun submitMedical() {
 
         val requiredQuestions = listOf(

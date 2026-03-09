@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import com.example.healthassistant.core.image.decodeBase64ToImageBitmap
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.designsystem.AppColors
 import com.example.healthassistant.designsystem.AppShapes
@@ -22,7 +23,8 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun HomeTopBar(
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    profileImageBase64: String? = null
 ) {
     Row(
         modifier = Modifier
@@ -33,19 +35,37 @@ fun HomeTopBar(
     ) {
 
         // 👤 Avatar
-        Image(
-            painter = painterResource(Res.drawable.img_user_avatar),
-            contentDescription = t("User Avatar"),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(44.dp)
-                .clip(AppShapes.circle)
-                .border(
-                    width = 1.dp,
-                    color = AppColors.blue,
-                    shape = AppShapes.circle
-                )
-        )
+        val decodedBitmap = profileImageBase64?.let { decodeBase64ToImageBitmap(it) }
+
+        if (decodedBitmap != null) {
+            Image(
+                bitmap = decodedBitmap,
+                contentDescription = t("User Avatar"),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(AppShapes.circle)
+                    .border(
+                        width = 1.dp,
+                        color = AppColors.blue,
+                        shape = AppShapes.circle
+                    )
+            )
+        } else {
+            Image(
+                painter = painterResource(Res.drawable.img_user_avatar),
+                contentDescription = t("User Avatar"),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(AppShapes.circle)
+                    .border(
+                        width = 1.dp,
+                        color = AppColors.blue,
+                        shape = AppShapes.circle
+                    )
+            )
+        }
 
 
         // ⚙ Settings
@@ -58,7 +78,7 @@ fun HomeTopBar(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(Res.drawable.ic_settings), // replace with your asset
+                painter = painterResource(Res.drawable.ic_settings),
                 contentDescription = t("Settings"),
                 modifier = Modifier.size(20.dp)
             )

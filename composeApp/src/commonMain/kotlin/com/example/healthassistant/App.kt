@@ -68,7 +68,7 @@ fun App(
     ttsManager: TextToSpeechManager,
     database: HealthDatabase,
     newsApiKey: String,
-    onEmergencyAction: (EmergencyAction, String?) -> Unit,
+    onEmergencyAction: (EmergencyAction, List<String>) -> Unit,
     onDownloadPdf: (com.example.healthassistant.domain.model.assessment.Report) -> Unit = {}
 ) {
 
@@ -180,7 +180,8 @@ fun App(
         val token = authViewModel.state.value.token ?: ""
         val onboardingProfileViewModel = remember {
             OnboardingProfileViewModel(
-                repository = profileRepository
+                repository = profileRepository,
+                local = generalProfileLocal
             )
         }
 
@@ -240,8 +241,18 @@ fun App(
             mutableStateOf<com.example.healthassistant.domain.model.assessment.Report?>(null)
         }
 
+        val homeViewModel = remember {
+            HomeViewModel(
+                profileLocal = generalProfileLocal,
+                onStartAssessment = { currentScreen = AppScreen.Assessment },
+                onOpenChat = { currentScreen = AppScreen.Chat(reportId = null) },
+                onOpenSettings = { currentScreen = AppScreen.Settings }
+            )
+        }
+
         androidx.compose.runtime.LaunchedEffect(currentScreen) {
             if (currentScreen == AppScreen.History) historyViewModel.loadReports()
+            if (currentScreen == AppScreen.Home) homeViewModel.refreshProfileData()
         }
 
         PlatformBackHandler {
@@ -284,8 +295,7 @@ fun App(
             }
         }
 
-        // Temporary hardcoded emergency contact (will replace later)
-        val emergencyContactNumber = "6374102550"
+
 
         Column {
             Box(modifier = Modifier.weight(1f)) {
@@ -294,6 +304,8 @@ fun App(
                     AppScreen.Login -> LoginScreen(
                         viewModel = authViewModel,
                         onNavigateToSignup = {
+                            onboardingProfileViewModel.resetState()
+                            onboardingMedicalViewModel.resetState()
                             currentScreen = AppScreen.Signup
                             AppLogger.d("NAVIGATION", "Navigated to Signup")
                         },
@@ -340,32 +352,33 @@ fun App(
                     )
 
                     AppScreen.Home -> HomeScreen(
-                        viewModel = HomeViewModel(
-                            onStartAssessment = {
-                                currentScreen = AppScreen.Assessment
-                            },
-                            onOpenChat = {
-                                currentScreen = AppScreen.Chat(reportId = null)
-                            },
-                            onOpenSettings = {
-                                currentScreen = AppScreen.Settings
-                            }
-                        ),
+                        viewModel = homeViewModel,
                         onEmergencyAction = { action ->
                             AppLogger.d("EMERGENCY", "App.kt received action: $action")
-                            AppLogger.d("EMERGENCY", "Using phone number: $emergencyContactNumber")
-                            onEmergencyAction(action, emergencyContactNumber)
+                            val numbers = homeViewModel.state.value.emergencyContactNumbers
+                            AppLogger.d("EMERGENCY", "Contact numbers: $numbers")
+                            onEmergencyAction(action, numbers)
                         }
                     )
 
                     AppScreen.Settings -> SettingsScreen(
                         onBack = { currentScreen = AppScreen.Home },
-                        onProfileClick = { currentScreen = AppScreen.EditProfile },
-                        onMedicalClick = { currentScreen = AppScreen.EditMedical },
+                        onProfileClick = {
+                            editProfileViewModel.resetForReopen()
+                            currentScreen = AppScreen.EditProfile
+                        },
+                        onMedicalClick = {
+                            editMedicalViewModel.resetForReopen()
+                            currentScreen = AppScreen.EditMedical
+                        },
                         onLanguageClick = { },
                         onLogoutClick = {
 
                             TokenManager.clearToken()
+                            onboardingProfileViewModel.resetState()
+                            onboardingMedicalViewModel.resetState()
+                            editProfileViewModel.resetForReopen()
+                            editMedicalViewModel.resetForReopen()
 
                             coroutineScope.launch {
 

@@ -27,6 +27,18 @@ class GeneralProfileLocalDataSourceImpl(
             .executeAsList()
     }
 
+    override suspend fun getByQuestionId(questionId: String): GeneralProfile? {
+
+        return database.generalProfileQueries
+            .getByQuestionId(questionId)
+            .executeAsOneOrNull()
+    }
+
+    override suspend fun deleteByQuestionId(questionId: String) {
+
+        database.generalProfileQueries.deleteByQuestionId(questionId)
+    }
+
     override suspend fun clearAll() {
         database.generalProfileQueries.deleteAll()
     }

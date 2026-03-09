@@ -28,7 +28,7 @@ fun AndroidApp(database: HealthDatabase) {
         val context = LocalContext.current
         appContext = context.applicationContext
 
-        var pendingEmergencyAction by remember { mutableStateOf<Pair<EmergencyAction, String?>?>(null) }
+        var pendingEmergencyAction by remember { mutableStateOf<Pair<EmergencyAction, List<String>>?>(null) }
 
 
         var micGranted by remember {
@@ -109,11 +109,11 @@ fun AndroidApp(database: HealthDatabase) {
 
             if (smsGranted && locationGranted && pendingEmergencyAction != null) {
 
-                val (action, phone) = pendingEmergencyAction!!
+                val (action, phones) = pendingEmergencyAction!!
 
                 AppLogger.d("EMERGENCY", "Auto-triggering action after permission granted")
 
-                emergencyManager.handleAction(action, phone)
+                emergencyManager.handleAction(action, phones)
 
                 pendingEmergencyAction = null
             }
@@ -125,27 +125,27 @@ fun AndroidApp(database: HealthDatabase) {
             ttsManager = ttsManager,
             database = database,
             newsApiKey = BuildConfig.NEWS_API_KEY,
-            onEmergencyAction = { action, phoneNumber ->
+            onEmergencyAction = { action, phoneNumbers ->
 
                 AppLogger.d("EMERGENCY", "AndroidApp received action: $action")
-                AppLogger.d("EMERGENCY", "Phone number: $phoneNumber")
+                AppLogger.d("EMERGENCY", "Phone numbers: $phoneNumbers")
                 AppLogger.d("EMERGENCY", "SMS permission: $smsGranted")
                 AppLogger.d("EMERGENCY", "Location permission: $locationGranted")
 
                 // Request permissions if not granted
                 if (!smsGranted) {
-                    pendingEmergencyAction = action to phoneNumber
+                    pendingEmergencyAction = action to phoneNumbers
                     smsPermissionLauncher.launch(android.Manifest.permission.SEND_SMS)
                     return@App
                 }
 
                 if (!locationGranted) {
-                    pendingEmergencyAction = action to phoneNumber
+                    pendingEmergencyAction = action to phoneNumbers
                     locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
                     return@App
                 }
 
-                emergencyManager.handleAction(action, phoneNumber)
+                emergencyManager.handleAction(action, phoneNumbers)
             },
             onDownloadPdf = { report ->
                 try {

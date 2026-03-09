@@ -13,5 +13,9 @@ interface GeneralProfileLocalDataSource {
 
     suspend fun getAll(): List<GeneralProfile>
 
+    suspend fun getByQuestionId(questionId: String): GeneralProfile?
+
+    suspend fun deleteByQuestionId(questionId: String)
+
     suspend fun clearAll()
 }

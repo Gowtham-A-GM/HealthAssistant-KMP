@@ -18,7 +18,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.example.healthassistant.core.image.ImagePickerManager
 import com.example.healthassistant.core.image.decodeBase64ToImageBitmap
-import com.example.healthassistant.core.utils.encodeImageToBase64
+import com.example.healthassistant.core.utils.compressAndEncodeProfileImage
 import com.example.healthassistant.presentation.auth.components.QuestionInput
 import com.example.healthassistant.presentation.auth.questions.ProfileQuestionConfig
 
@@ -36,7 +36,7 @@ fun EditProfileScreen(
     // IMAGE PICKER
     val imagePicker = ImagePickerManager { bytes, mime ->
 
-        val base64 = encodeImageToBase64(bytes)
+        val base64 = compressAndEncodeProfileImage(bytes)
 
         viewModel.updateProfileImage(base64)
     }
@@ -144,10 +144,19 @@ fun EditProfileScreen(
         }
 
         // -------------------------------
-        // PROFILE QUESTIONS
+        // PROFILE QUESTIONS (+ female conditional)
         // -------------------------------
 
-        items(ProfileQuestionConfig.questions) { question ->
+        val gender = state.answers["q_gender"]
+        val age = state.answers["q_age"]?.toIntOrNull()
+        val showFemaleQuestions =
+            gender?.lowercase() == "female" && age != null && age in 12..55
+        val allQuestions =
+            ProfileQuestionConfig.questions +
+                    if (showFemaleQuestions) ProfileQuestionConfig.femaleConditional
+                    else emptyList()
+
+        items(allQuestions) { question ->
 
             val value = remember(state.answers) {
                 state.answers[question.id] ?: ""
@@ -165,12 +174,74 @@ fun EditProfileScreen(
         }
 
         // -------------------------------
-        // SAVE BUTTON
+        // EMERGENCY CONTACTS
         // -------------------------------
 
         item {
 
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                text = "Emergency Contacts",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            state.emergencyContacts.forEachIndexed { index, contact ->
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(2.dp)
+                ) {
+
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+
+                        Text(
+                            text = "Emergency Contact ${index + 1}",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = contact.name,
+                            onValueChange = { viewModel.updateContactName(index, it) },
+                            label = { Text("Contact Name") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        OutlinedTextField(
+                            value = contact.number,
+                            onValueChange = { viewModel.updateContactNumber(index, it) },
+                            label = { Text("Phone Number") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+            }
+
+            OutlinedButton(
+                onClick = { viewModel.addEmergencyContact() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("+ Add Another Contact")
+            }
+
             Spacer(Modifier.height(20.dp))
+        }
+
+        // -------------------------------
+        // SAVE BUTTON
+        // -------------------------------
+
+        item {
 
             Button(
                 onClick = { viewModel.saveProfile() },

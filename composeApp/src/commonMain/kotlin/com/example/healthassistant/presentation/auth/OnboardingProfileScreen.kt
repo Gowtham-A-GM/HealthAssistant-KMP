@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.healthassistant.core.image.ImagePickerManager
-import com.example.healthassistant.core.utils.encodeImageToBase64
+import com.example.healthassistant.core.utils.compressAndEncodeProfileImage
 import com.example.healthassistant.presentation.auth.components.QuestionInput
 import com.example.healthassistant.presentation.auth.questions.ProfileQuestionConfig
 import androidx.compose.foundation.Image
@@ -41,7 +41,7 @@ fun OnboardingProfileScreen(
 
     val imagePicker = ImagePickerManager { bytes, mime ->
 
-        val base64 = encodeImageToBase64(bytes)
+        val base64 = compressAndEncodeProfileImage(bytes)
         viewModel.updateProfileImage(base64)
     }
 

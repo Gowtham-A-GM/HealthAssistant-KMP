@@ -9,6 +9,11 @@ fun extractReadableValue(json: String): String {
             Regex("\"selected_option_label\":\"(.*?)\"")
                 .find(json)?.groupValues?.get(1) ?: ""
 
+        } else if (json.contains("number_value")) {
+
+            Regex("\"number_value\":(\\d+)")
+                .find(json)?.groupValues?.get(1) ?: ""
+
         } else if (json.contains("\"value\"")) {
 
             Regex("\"value\":\"(.*?)\"")

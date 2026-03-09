@@ -10,8 +10,10 @@ import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerDto
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerItemDto
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerRequestDto
 import com.example.healthassistant.domain.repository.ProfileRepository
+import com.example.healthassistant.presentation.auth.model.EmergencyContact
 import com.example.healthassistant.presentation.auth.questions.ProfileQuestionConfig
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -33,12 +35,31 @@ class EditProfileViewModel(
 
             AppLogger.section("EDIT_PROFILE_VM", "Loading Local Profile")
 
-            val rows = local.getAll()
+            // Fetch image separately to avoid SQLiteBlobTooBigException on getAll()
+            val imageBase64: String? = try {
+                local.getByQuestionId("q_profile_image")
+                    ?.answer_json
+                    ?.let { extractReadableValue(it) }
+                    ?.takeIf { it.isNotBlank() }
+            } catch (e: Exception) {
+                // Oversized uncompressed image from old onboarding — purge it
+                AppLogger.d("EDIT_PROFILE_VM", "Profile image too large, removing: ${e.message}")
+                local.deleteByQuestionId("q_profile_image")
+                null
+            }
+
+            val rows = try {
+                local.getAll()
+            } catch (e: Exception) {
+                // getAll() still fails (shouldn't after image purge above, but guard anyway)
+                AppLogger.d("EDIT_PROFILE_VM", "getAll() failed: ${e.message}")
+                emptyList()
+            }
 
             AppLogger.d("EDIT_PROFILE_VM", "Rows count → ${rows.size}")
 
             val answersMap = mutableMapOf<String, String>()
-            var imageBase64: String? = null
+            var loadedContacts: List<EmergencyContact>? = null
 
             rows.forEach { row ->
 
@@ -46,27 +67,40 @@ class EditProfileViewModel(
                     "EDIT_PROFILE_VM",
                     "Row → ${row.question_id} : ${row.answer_json}"
                 )
-                AppLogger.d(
-                    "EDIT_PROFILE_VM",
-                    "Parsed → ${row.question_id} : ${extractReadableValue(row.answer_json)}"
-                )
 
-                if (row.question_id == "q_profile_image") {
+                when (row.question_id) {
 
-                    imageBase64 = extractReadableValue(row.answer_json)
+                    "q_profile_image" -> { /* handled above */ }
 
-                } else {
+                    "q_emergency_contacts" -> {
+                        try {
+                            val dto = Json.decodeFromString<ProfileAnswerDto>(row.answer_json)
+                            val contactsJson = dto.value ?: "[]"
+                            val regex = Regex("""\{"name":"([^"]*?)","number":"([^"]*?)"\}""")
+                            val contacts = regex.findAll(contactsJson).map {
+                                EmergencyContact(
+                                    name = it.groupValues[1],
+                                    number = it.groupValues[2]
+                                )
+                            }.toList()
+                            loadedContacts = if (contacts.isEmpty()) null else contacts
+                        } catch (e: Exception) {
+                            AppLogger.d("EDIT_PROFILE_VM", "Failed to parse emergency contacts: ${e.message}")
+                        }
+                    }
 
-                    val parsed = extractReadableValue(row.answer_json)
-
-                    answersMap[row.question_id] =
-                        if (parsed == "Not Applicable") "" else parsed
+                    else -> {
+                        val parsed = extractReadableValue(row.answer_json)
+                        answersMap[row.question_id] =
+                            if (parsed == "Not Applicable") "" else parsed
+                    }
                 }
             }
 
             state.value = state.value.copy(
                 answers = answersMap,
-                profileImageBase64 = imageBase64
+                profileImageBase64 = imageBase64 ?: state.value.profileImageBase64,
+                emergencyContacts = loadedContacts ?: state.value.emergencyContacts
             )
         }
     }
@@ -99,17 +133,16 @@ class EditProfileViewModel(
 
                 if (response.success) {
 
-                    // update local db
-                    local.clearAll()
-
-                    request.answer_json.forEach {
-
-                        local.insert(
-                            questionId = it.question_id,
-                            questionText = it.question_text,
-                            answerJson = Json.encodeToString(it.answer_json)
-                        )
-                    }
+                    // Update local DB via UPSERT (INSERT OR REPLACE).
+                    // Profile image is compressed to ≤200 KB so it fits within SQLite limits.
+                    request.answer_json
+                        .forEach {
+                            local.insert(
+                                questionId = it.question_id,
+                                questionText = it.question_text,
+                                answerJson = Json.encodeToString(it.answer_json)
+                            )
+                        }
 
                     state.value = state.value.copy(isSuccess = true)
 
@@ -209,11 +242,60 @@ class EditProfileViewModel(
             )
         }
 
+        // 4️⃣ EMERGENCY CONTACTS
+
+        val contacts = state.value.emergencyContacts
+            .filter { it.name.isNotBlank() && it.number.isNotBlank() }
+
+        if (contacts.isNotEmpty()) {
+
+            val jsonContacts = contacts.joinToString(
+                prefix = "[",
+                postfix = "]"
+            ) {
+                """{"name":"${it.name}","number":"${it.number}"}"""
+            }
+
+            answerList.add(
+                ProfileAnswerItemDto(
+                    question_id = "q_emergency_contacts",
+                    question_text = "Emergency Contacts",
+                    answer_json = ProfileAnswerDto(
+                        type = "list",
+                        value = jsonContacts
+                    )
+                )
+            )
+        }
+
         return ProfileAnswerRequestDto(
             answer_json = answerList
         )
     }
+
     fun reload() {
         loadLocalProfile()
+    }
+
+    fun resetForReopen() {
+        state.value = state.value.copy(isSuccess = false, errorMessage = null)
+    }
+
+    fun addEmergencyContact() {
+        val list = state.value.emergencyContacts.toMutableList()
+        list.add(EmergencyContact())
+        state.value = state.value.copy(emergencyContacts = list)
+    }
+
+    fun updateContactName(index: Int, value: String) {
+        val list = state.value.emergencyContacts.toMutableList()
+        list[index] = list[index].copy(name = value)
+        state.value = state.value.copy(emergencyContacts = list)
+    }
+
+    fun updateContactNumber(index: Int, value: String) {
+        val list = state.value.emergencyContacts.toMutableList()
+        list[index] = list[index].copy(number = value)
+        state.value = state.value.copy(emergencyContacts = list)
     }
 }

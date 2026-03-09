@@ -20,23 +20,23 @@ class EmergencyManager(
     @RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     fun handleAction(
         action: EmergencyAction,
-        familyNumber: String?
+        familyNumbers: List<String>
     ) {
 
         AppLogger.d("EMERGENCY", "Handling action: $action")
-        AppLogger.d("EMERGENCY", "Family number: $familyNumber")
+        AppLogger.d("EMERGENCY", "Family numbers: $familyNumbers")
         when (action) {
             EmergencyAction.Call108 -> {
                 dial108()
             }
 
             EmergencyAction.AlertFamily -> {
-                familyNumber?.let { sendSmsWithLocation(it) }
+                familyNumbers.forEach { sendSmsWithLocation(it) }
             }
 
             EmergencyAction.Both -> {
                 dial108()
-                familyNumber?.let { sendSmsWithLocation(it) }
+                familyNumbers.forEach { sendSmsWithLocation(it) }
             }
         }
     }

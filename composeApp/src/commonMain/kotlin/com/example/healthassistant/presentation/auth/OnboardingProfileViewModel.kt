@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.healthassistant.core.logger.AppLogger
+import com.example.healthassistant.data.local.profile.GeneralProfileLocalDataSource
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerDto
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerItemDto
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerRequestDto
@@ -11,9 +12,12 @@ import com.example.healthassistant.domain.repository.ProfileRepository
 import com.example.healthassistant.presentation.auth.model.EmergencyContact
 import com.example.healthassistant.presentation.auth.questions.ProfileQuestionConfig
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class OnboardingProfileViewModel(
-    private val repository: ProfileRepository
+    private val repository: ProfileRepository,
+    private val local: GeneralProfileLocalDataSource
 ) : ViewModel() {
 
     var state = mutableStateOf(OnboardingProfileState())
@@ -23,6 +27,10 @@ class OnboardingProfileViewModel(
         state.value = state.value.copy(
             answers = state.value.answers + (id to value)
         )
+    }
+
+    fun resetState() {
+        state.value = OnboardingProfileState()
     }
 
     fun getValueForQuestion(id: String): String {
@@ -108,6 +116,15 @@ class OnboardingProfileViewModel(
                 AppLogger.logJson("PROFILE_API", "PROFILE RESPONSE", response)
 
                 if (response.success) {
+
+                    // Persist to local DB so EditProfileViewModel can read it
+                    request.answer_json.forEach {
+                        local.insert(
+                            questionId = it.question_id,
+                            questionText = it.question_text,
+                            answerJson = Json.encodeToString(it.answer_json)
+                        )
+                    }
 
                     state.value = state.value.copy(
                         isSuccess = true

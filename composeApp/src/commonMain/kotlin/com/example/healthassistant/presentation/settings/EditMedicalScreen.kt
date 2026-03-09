@@ -44,9 +44,20 @@ fun EditMedicalScreen(
             Spacer(Modifier.height(16.dp))
         }
 
-        items(MedicalQuestionConfig.questions) { question ->
+        items(MedicalQuestionConfig.questions.filter { question ->
+            // Hide follow-up questions when their parent answer is "No"
+            when (question.id) {
+                "q_condition_details" -> state.answers["q_past_conditions"] == "Yes"
+                "q_surgery_details"   -> state.answers["q_surgeries"] == "Yes"
+                "q_medication_details" -> state.answers["q_current_medication"] == "Yes"
+                "q_allergy_details"   -> state.answers["q_allergies"] == "Yes"
+                else -> true
+            }
+        }) { question ->
 
-            val value = state.answers[question.id] ?: ""
+            val value = (state.answers[question.id] ?: "").let {
+                if (it == "Not Applicable") "" else it
+            }
 
             QuestionInput(
                 question = question.copy(value = value),

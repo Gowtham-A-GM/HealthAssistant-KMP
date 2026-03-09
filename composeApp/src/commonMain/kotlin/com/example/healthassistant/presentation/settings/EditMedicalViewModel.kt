@@ -82,8 +82,8 @@ class EditMedicalViewModel(
 
             if (response.success) {
 
-                local.clearAll()
-
+                // Update local DB via UPSERT (INSERT OR REPLACE) — no clearAll
+                // so DB is never left empty if a write fails mid-way.
                 request.answer_json.forEach {
 
                     local.insert(
@@ -121,5 +121,9 @@ class EditMedicalViewModel(
     }
     fun reload() {
         loadLocalMedical()
+    }
+
+    fun resetForReopen() {
+        state.value = state.value.copy(isSuccess = false)
     }
 }

@@ -10,6 +10,8 @@ data class HomeState(
 
     // User
     val userName: String = "",
+    val profileImageBase64: String? = null,
+    val emergencyContactNumbers: List<String> = emptyList(),
 
     // Greeting (can later compute based on time)
     val greetingText: String = "Good Morning",

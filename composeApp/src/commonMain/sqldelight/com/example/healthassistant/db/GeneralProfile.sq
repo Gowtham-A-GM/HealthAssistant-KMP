@@ -11,5 +11,11 @@ VALUES (?, ?, ?);
 getAll:
 SELECT * FROM GeneralProfile;
 
+getByQuestionId:
+SELECT * FROM GeneralProfile WHERE question_id = ?;
+
+deleteByQuestionId:
+DELETE FROM GeneralProfile WHERE question_id = ?;
+
 deleteAll:
 DELETE FROM GeneralProfile;

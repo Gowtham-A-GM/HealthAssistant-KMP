@@ -46,7 +46,8 @@ fun HomeContent(
         HomeTopBar(
             onSettingsClick = {
                 onEvent(HomeEvent.SettingsClicked)
-            }
+            },
+            profileImageBase64 = state.profileImageBase64
         )
 
         Spacer(modifier = Modifier.height(14.dp))
