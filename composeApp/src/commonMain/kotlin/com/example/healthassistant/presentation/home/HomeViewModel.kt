@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.healthassistant.core.utils.extractReadableValue
 import com.example.healthassistant.data.local.profile.GeneralProfileLocalDataSource
+import com.example.healthassistant.data.local.report.ReportLocalDataSource
 import com.example.healthassistant.data.remote.profile.dto.ProfileAnswerDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,16 +14,37 @@ import kotlinx.serialization.json.Json
 
 class HomeViewModel(
     private val profileLocal: GeneralProfileLocalDataSource,
+    private val reportLocal: ReportLocalDataSource,
     private val onStartAssessment: () -> Unit,
     private val onOpenChat: () -> Unit,
-    private val onOpenSettings: () -> Unit
+    private val onOpenSettings: () -> Unit,
+    private val onOpenLastReport: ((reportId: String) -> Unit)? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state
 
+    private val _navigateToReportId = MutableStateFlow<String?>(null)
+    val navigateToReportId: StateFlow<String?> = _navigateToReportId
+
     init {
         loadProfileData()
+        loadSymptomChips()
+    }
+
+    private fun loadSymptomChips() {
+        viewModelScope.launch {
+            try {
+                val reports = reportLocal.getAll()
+                val counts = reports
+                    .groupingBy { it.topic.trim() }
+                    .eachCount()
+                val chips = counts.entries
+                    .sortedByDescending { it.value }
+                    .map { (topic, count) -> "$count x $topic" }
+                _state.value = _state.value.copy(suggestions = chips)
+            } catch (_: Exception) { /* ignore */ }
+        }
     }
 
     private fun loadProfileData() {
@@ -73,6 +95,11 @@ class HomeViewModel(
 
     fun refreshProfileData() {
         loadProfileData()
+        loadSymptomChips()
+    }
+
+    fun clearNavigateToReport() {
+        _navigateToReportId.value = null
     }
 
     fun onEvent(event: HomeEvent) {
@@ -94,7 +121,18 @@ class HomeViewModel(
             }
 
             is HomeEvent.QuickHelpClicked -> {
-                // handle later
+                if (event.item.title == "Previous Check") {
+                    viewModelScope.launch {
+                        try {
+                            val lastReport = reportLocal.getAll()
+                                .maxByOrNull { it.generatedAt }
+                            if (lastReport != null) {
+                                onOpenLastReport?.invoke(lastReport.reportId)
+                                _navigateToReportId.value = lastReport.reportId
+                            }
+                        } catch (_: Exception) { /* ignore */ }
+                    }
+                }
             }
         }
     }

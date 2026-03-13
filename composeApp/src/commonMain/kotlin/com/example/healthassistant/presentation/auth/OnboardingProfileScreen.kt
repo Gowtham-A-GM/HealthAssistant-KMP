@@ -8,7 +8,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import com.example.healthassistant.core.utils.t
+import com.example.healthassistant.designsystem.AppColors
+import com.example.healthassistant.designsystem.AppTypography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -103,7 +115,8 @@ fun OnboardingProfileScreen(
 
             Text(
                 text = "Profile Photo",
-                style = MaterialTheme.typography.titleMedium
+                style = AppTypography.h3(),
+                color = AppColors.textPrimary
             )
 
             Spacer(Modifier.height(12.dp))
@@ -123,7 +136,7 @@ fun OnboardingProfileScreen(
                         .clip(CircleShape)
                         .border(
                             width = 2.dp,
-                            color = MaterialTheme.colorScheme.outline,
+                            color = AppColors.darkBlue,
                             shape = CircleShape
                         )
                         .clickable {
@@ -150,7 +163,7 @@ fun OnboardingProfileScreen(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Profile",
                             modifier = Modifier.size(60.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = AppColors.darkBlue
                         )
                     }
                 }
@@ -164,7 +177,8 @@ fun OnboardingProfileScreen(
             ) {
                 Text(
                     text = "Tap to upload photo",
-                    style = MaterialTheme.typography.bodySmall
+                    style = AppTypography.bodySmall(),
+                    color = AppColors.dustyGray
                 )
             }
 
@@ -206,7 +220,8 @@ fun OnboardingProfileScreen(
 
             Text(
                 text = "Emergency Contacts",
-                style = MaterialTheme.typography.titleMedium
+                style = AppTypography.h3(),
+                color = AppColors.textPrimary
             )
 
             Spacer(Modifier.height(10.dp))
@@ -224,7 +239,8 @@ fun OnboardingProfileScreen(
 
                         Text(
                             text = "Emergency Contact ${index + 1}",
-                            style = MaterialTheme.typography.titleSmall
+                            style = AppTypography.title(),
+                            color = AppColors.textPrimary
                         )
 
                         Spacer(Modifier.height(8.dp))
@@ -261,7 +277,7 @@ fun OnboardingProfileScreen(
                 onClick = { viewModel.addEmergencyContact() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("+ Add Another Contact")
+                Text(t("+ Add Another Contact"), style = AppTypography.title(), color = AppColors.darkBlue)
             }
 
             Spacer(Modifier.height(20.dp))
@@ -287,7 +303,7 @@ fun OnboardingProfileScreen(
 
                 } else {
 
-                    Text("Save Profile")
+                    Text(t("Save Profile"), style = AppTypography.title(), color = AppColors.textSecondary)
                 }
             }
 

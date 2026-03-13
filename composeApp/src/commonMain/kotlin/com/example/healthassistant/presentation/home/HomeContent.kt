@@ -85,21 +85,23 @@ fun HomeContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = t("You Can Ask Like This"),
-            style = AppTypography.poppinsMedium().copy(
-                fontSize = 12.sp
-            ),
-            color = AppColors.textPrimary
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        if (state.suggestions.isNotEmpty()) {
+            Text(
+                text = t("Your most frequent Symptom"),
+                style = AppTypography.poppinsMedium().copy(
+                    fontSize = 12.sp
+                ),
+                color = AppColors.textPrimary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-        SuggestionChips(
-            suggestions = state.suggestions,
-            onClick = {
-                onEvent(HomeEvent.SuggestionClicked(it))
-            }
-        )
+            SuggestionChips(
+                suggestions = state.suggestions,
+                onClick = {
+                    onEvent(HomeEvent.SuggestionClicked(it))
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

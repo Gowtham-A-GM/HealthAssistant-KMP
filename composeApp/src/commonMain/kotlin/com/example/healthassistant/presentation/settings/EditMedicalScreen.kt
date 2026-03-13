@@ -3,7 +3,13 @@ package com.example.healthassistant.presentation.settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import com.example.healthassistant.core.utils.t
+import com.example.healthassistant.designsystem.AppColors
+import com.example.healthassistant.designsystem.AppTypography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -31,14 +37,16 @@ fun EditMedicalScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(16.dp)
     ) {
 
         item {
 
             Text(
-                text = "Edit Medical Data",
-                style = MaterialTheme.typography.titleLarge
+                text = t("Edit Medical Data"),
+                style = AppTypography.h1(),
+                color = AppColors.textPrimary
             )
 
             Spacer(Modifier.height(16.dp))
@@ -79,7 +87,7 @@ fun EditMedicalScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                Text("Save")
+                Text(t("Save"), style = AppTypography.title(), color = AppColors.textSecondary)
             }
         }
     }

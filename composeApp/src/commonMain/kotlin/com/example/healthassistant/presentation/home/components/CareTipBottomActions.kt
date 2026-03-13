@@ -84,7 +84,7 @@ fun CareTipBottomActions(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = t("Skip for Today"),
+                text = t("Close"),
                 style = AppTypography.poppinsSemiBold().copy(fontSize = 14.sp),
                 color = AppColors.dustyGray
             )
@@ -118,7 +118,7 @@ fun CareTipBottomActions(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = t("Mark as Done"),
+                text = t("Next Tip"),
                 style = AppTypography.poppinsSemiBold().copy(fontSize = 14.sp),
                 color = AppColors.blue
             )

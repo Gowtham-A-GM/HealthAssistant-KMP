@@ -16,15 +16,8 @@ data class HomeState(
     // Greeting (can later compute based on time)
     val greetingText: String = "Good Morning",
 
-    // Suggestion Chips
-    val suggestions: List<String> = listOf(
-        "I have fever",
-        "Stomach hurts",
-        "Coughing",
-        "Headache",
-        "Chest pain",
-        "I'm feeling very tired from morning"
-    ),
+    // Symptom Chips — populated from local report DB ("N x Topic")
+    val suggestions: List<String> = emptyList(),
 
     // Quick Help Items
     val quickHelpItems: List<QuickHelpItem> = listOf(

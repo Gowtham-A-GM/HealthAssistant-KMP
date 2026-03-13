@@ -49,6 +49,7 @@ import com.example.healthassistant.presentation.auth.OnboardingMedicalViewModel
 import com.example.healthassistant.presentation.auth.OnboardingProfileScreen
 import com.example.healthassistant.presentation.auth.OnboardingProfileViewModel
 import com.example.healthassistant.presentation.auth.SignupScreen
+import com.example.healthassistant.presentation.auth.WelcomeScreen
 import com.example.healthassistant.presentation.chat.ChatScreen
 import com.example.healthassistant.presentation.chat.ChatViewModel
 import com.example.healthassistant.presentation.home.EmergencyAction
@@ -78,7 +79,7 @@ fun App(
 
     HealthAssistantTheme {
 
-        var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Login) }
+        var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Welcome) }
         val coroutineScope = rememberCoroutineScope()
 
         // ── Restore saved language on first composition ──
@@ -257,6 +258,7 @@ fun App(
         val homeViewModel = remember {
             HomeViewModel(
                 profileLocal = generalProfileLocal,
+                reportLocal = reportLocal,
                 onStartAssessment = { currentScreen = AppScreen.Assessment },
                 onOpenChat = { currentScreen = AppScreen.Chat(reportId = null) },
                 onOpenSettings = { currentScreen = AppScreen.Settings }
@@ -268,9 +270,30 @@ fun App(
             if (currentScreen == AppScreen.Home) homeViewModel.refreshProfileData()
         }
 
+        // Navigate to last report when "Previous Check" is tapped
+        val navigateToReportId by homeViewModel.navigateToReportId.collectAsState()
+        androidx.compose.runtime.LaunchedEffect(navigateToReportId) {
+            val reportId = navigateToReportId ?: return@LaunchedEffect
+            homeViewModel.clearNavigateToReport()
+            val report = try { reportLocal.getAll().find { it.reportId == reportId } } catch (_: Exception) { null }
+            if (report != null) {
+                currentHistoryReport = report
+                currentScreen = AppScreen.HistoryDetail(reportId)
+            }
+        }
+
         PlatformBackHandler {
 
             currentScreen = when (currentScreen) {
+                AppScreen.Welcome ->
+                    AppScreen.Welcome
+
+                AppScreen.Login ->
+                    AppScreen.Welcome
+
+                AppScreen.Signup ->
+                    AppScreen.Welcome
+
                 AppScreen.OnboardingProfile ->
                     AppScreen.Signup
 
@@ -317,6 +340,11 @@ fun App(
             Box(modifier = Modifier.weight(1f)) {
                 when (currentScreen) {
 
+                    AppScreen.Welcome -> WelcomeScreen(
+                        onNavigateToLogin = { currentScreen = AppScreen.Login },
+                        onNavigateToSignup = { currentScreen = AppScreen.Signup }
+                    )
+
                     AppScreen.Login -> LoginScreen(
                         viewModel = authViewModel,
                         onNavigateToSignup = {
@@ -328,7 +356,8 @@ fun App(
                         onLoginSuccess = {
                             currentScreen = AppScreen.Home
                             AppLogger.d("NAVIGATION", "Login Success → Home")
-                        }
+                        },
+                        onBack = { currentScreen = AppScreen.Welcome }
                     )
                     AppScreen.OnboardingProfile -> OnboardingProfileScreen(
                         viewModel = onboardingProfileViewModel,
@@ -354,7 +383,8 @@ fun App(
                         onSignupSuccess = {
                             currentScreen = AppScreen.OnboardingProfile
                             AppLogger.d("NAVIGATION", "Signup Success → OnboardingProfile")
-                        }
+                        },
+                        onBack = { currentScreen = AppScreen.Welcome }
                     )
 
                     AppScreen.EditProfile -> EditProfileScreen(
@@ -508,6 +538,7 @@ fun App(
             if (
                 currentScreen != AppScreen.Assessment &&
                 currentScreen !is AppScreen.Chat &&
+                currentScreen != AppScreen.Welcome &&
                 currentScreen != AppScreen.Login &&
                 currentScreen != AppScreen.Signup &&
                 currentScreen != AppScreen.OnboardingProfile &&

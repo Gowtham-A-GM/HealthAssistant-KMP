@@ -9,13 +9,22 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import com.example.healthassistant.designsystem.AppColors
+import com.example.healthassistant.designsystem.AppTypography
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.example.healthassistant.core.image.ImagePickerManager
 import com.example.healthassistant.core.logger.AppLogger
 import com.example.healthassistant.core.bodymap.BodyRegionDataProvider
+import com.example.healthassistant.core.platform.PlatformBackHandler
 import com.example.healthassistant.core.utils.t
 import com.example.healthassistant.domain.model.assessment.ResponseOption
 import com.example.healthassistant.presentation.assessment.components.*
@@ -43,6 +53,10 @@ fun AssessmentScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     var showLoading by remember { mutableStateOf(false) }
     var showSkipBanner by remember { mutableStateOf(false) }
+
+    PlatformBackHandler {
+        showExitDialog = true
+    }
 
     LaunchedEffect(showSkipBanner) {
         if (showSkipBanner) {
@@ -532,75 +546,113 @@ fun AssessmentScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StyledDropdown(
     options: List<ResponseOption>,
     questionId: String,
     onOptionSelected: (String) -> Unit
 ) {
+    var expanded by remember(questionId) { mutableStateOf(false) }
+    var selectedLabel by remember(questionId) { mutableStateOf("") }
 
-    var expanded by remember { mutableStateOf(false) }
-    var selectedLabel by remember(questionId) {
-        mutableStateOf("")
-    }
-
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-
-        OutlinedTextField(
-            value = t(selectedLabel),
-            onValueChange = {},
-            readOnly = true,
-            placeholder = {
-                Text(
-                    if (selectedLabel.isEmpty())
-                        t("Select an option")
-                    else
-                        t(selectedLabel)
-                )
-            },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = null
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF5A8DEE),
-                unfocusedBorderColor = Color(0xFFB0C4FF)
-            )
-        )
-
-        // 👇 Invisible click layer over entire field
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // ── Trigger box ──
         Box(
             modifier = Modifier
-                .matchParentSize()
-                .clickable { expanded = true }
-        )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 250.dp)
-        ) {
-
-            options.forEach { option ->
-
-                DropdownMenuItem(
-                    text = { Text(t(option.label)) },
-                    onClick = {
-                        selectedLabel = option.label
-                        expanded = false
-                        onOptionSelected(option.id)
-                    }
+                .height(54.dp)
+                .background(
+                    color = if (selectedLabel.isEmpty()) AppColors.surface
+                            else AppColors.lightBlue.copy(alpha = 0.25f),
+                    shape = RoundedCornerShape(16.dp)
                 )
+                .then(
+                    Modifier.border(
+                        width = 1.5.dp,
+                        color = if (expanded) AppColors.darkBlue
+                                else AppColors.dustyGray.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                )
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = if (selectedLabel.isEmpty()) t("Select an option") else t(selectedLabel),
+                style = AppTypography.title(),
+                color = if (selectedLabel.isEmpty()) AppColors.dustyGray else AppColors.textPrimary
+            )
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp
+                              else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = AppColors.darkBlue,
+                modifier = Modifier.align(Alignment.CenterEnd).size(24.dp)
+            )
+        }
+
+        // ── Expandable options list ──
+        AnimatedVisibility(visible = expanded) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .heightIn(max = 300.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = AppColors.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    options.forEachIndexed { index, option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (option.label == selectedLabel)
+                                        AppColors.lightBlue.copy(alpha = 0.35f)
+                                    else Color.Transparent
+                                )
+                                .clickable {
+                                    selectedLabel = option.label
+                                    expanded = false
+                                    onOptionSelected(option.id)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = t(option.label),
+                                style = AppTypography.title(),
+                                color = if (option.label == selectedLabel)
+                                            AppColors.darkBlue
+                                        else AppColors.textPrimary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (option.label == selectedLabel) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = AppColors.darkBlue,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        if (index < options.lastIndex) {
+                            HorizontalDivider(
+                                color = AppColors.dustyGray.copy(alpha = 0.15f),
+                                thickness = 0.5.dp
+                            )
+                        }
+                    }
+                }
             }
         }
     }

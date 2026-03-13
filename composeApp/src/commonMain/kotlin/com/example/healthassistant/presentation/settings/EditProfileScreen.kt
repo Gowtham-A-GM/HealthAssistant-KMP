@@ -9,7 +9,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import com.example.healthassistant.core.utils.t
+import com.example.healthassistant.designsystem.AppColors
+import com.example.healthassistant.designsystem.AppTypography
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,14 +65,16 @@ fun EditProfileScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(16.dp)
     ) {
 
         item {
 
             Text(
-                text = "Edit Profile",
-                style = MaterialTheme.typography.titleLarge
+                text = t("Edit Profile"),
+                style = AppTypography.h1(),
+                color = AppColors.textPrimary
             )
 
             Spacer(Modifier.height(20.dp))
@@ -74,8 +87,9 @@ fun EditProfileScreen(
         item {
 
             Text(
-                text = "Profile Photo",
-                style = MaterialTheme.typography.titleMedium
+                text = t("Profile Photo"),
+                style = AppTypography.h3(),
+                color = AppColors.textPrimary
             )
 
             Spacer(Modifier.height(12.dp))
@@ -95,7 +109,7 @@ fun EditProfileScreen(
                         .clip(CircleShape)
                         .border(
                             width = 2.dp,
-                            color = MaterialTheme.colorScheme.outline,
+                            color = AppColors.darkBlue,
                             shape = CircleShape
                         )
                         .clickable {
@@ -121,7 +135,7 @@ fun EditProfileScreen(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Profile Icon",
                             modifier = Modifier.size(60.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = AppColors.darkBlue
                         )
                     }
                 }
@@ -135,8 +149,9 @@ fun EditProfileScreen(
             ) {
 
                 Text(
-                    text = "Tap to change photo",
-                    style = MaterialTheme.typography.bodySmall
+                    text = t("Tap to change photo"),
+                    style = AppTypography.bodySmall(),
+                    color = AppColors.dustyGray
                 )
             }
 
@@ -183,7 +198,8 @@ fun EditProfileScreen(
 
             Text(
                 text = "Emergency Contacts",
-                style = MaterialTheme.typography.titleMedium
+                style = AppTypography.h3(),
+                color = AppColors.textPrimary
             )
 
             Spacer(Modifier.height(10.dp))
@@ -201,7 +217,8 @@ fun EditProfileScreen(
 
                         Text(
                             text = "Emergency Contact ${index + 1}",
-                            style = MaterialTheme.typography.titleSmall
+                            style = AppTypography.title(),
+                            color = AppColors.textPrimary
                         )
 
                         Spacer(Modifier.height(8.dp))
@@ -231,7 +248,7 @@ fun EditProfileScreen(
                 onClick = { viewModel.addEmergencyContact() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("+ Add Another Contact")
+                Text(t("+ Add Another Contact"), style = AppTypography.title(), color = AppColors.darkBlue)
             }
 
             Spacer(Modifier.height(20.dp))
@@ -258,7 +275,7 @@ fun EditProfileScreen(
 
                 } else {
 
-                    Text("Save Profile")
+                    Text(t("Save Profile"), style = AppTypography.title(), color = AppColors.textSecondary)
                 }
             }
 

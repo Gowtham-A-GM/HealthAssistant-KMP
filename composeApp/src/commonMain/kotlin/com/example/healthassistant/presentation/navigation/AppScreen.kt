@@ -1,10 +1,11 @@
-﻿package com.example.healthassistant.presentation.navigation
+package com.example.healthassistant.presentation.navigation
 
 import com.example.healthassistant.domain.model.assessment.PossibleCause
 
 
 sealed class AppScreen {
 
+    object Welcome : AppScreen()
     object Login : AppScreen()
     object Signup : AppScreen()
 
